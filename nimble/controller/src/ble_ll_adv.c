@@ -42,6 +42,7 @@
 #include "controller/ble_ll_rfmgmt.h"
 #include "ble_ll_conn_priv.h"
 
+#include "gpio_debug.h"
 /* XXX: TODO
  * 1) Need to look at advertising and scan request PDUs. Do I allocate these
  * once? Do I use a different pool for smaller ones? Do I statically declare
@@ -1017,6 +1018,7 @@ ble_ll_adv_aux_conn_rsp_pdu_make(uint8_t *dptr, void *pducb_arg,
 static void
 ble_ll_adv_tx_done(void *arg)
 {
+    gpio_toggle(DEBUG_ADV_TXDONECB_GPIO);
     struct ble_ll_adv_sm *advsm;
 
     /* reset power to max after advertising */
@@ -1045,6 +1047,7 @@ ble_ll_adv_tx_done(void *arg)
 
     /* We no longer have a current state machine */
     g_ble_ll_cur_adv_sm = NULL;
+    gpio_toggle(DEBUG_ADV_TXDONECB_GPIO);
 }
 
 /*
@@ -1091,7 +1094,7 @@ ble_ll_adv_tx_start_cb(struct ble_ll_sched_item *sch)
     uint8_t end_trans;
     uint32_t txstart;
     struct ble_ll_adv_sm *advsm;
-
+    gpio_toggle(DEBUG_ADV_TXCB_GPIO);
     /* Get the state machine for the event */
     advsm = (struct ble_ll_adv_sm *)sch->cb_arg;
 
@@ -1179,10 +1182,11 @@ ble_ll_adv_tx_start_cb(struct ble_ll_sched_item *sch)
 
     /* Count # of adv. sent */
     STATS_INC(ble_ll_stats, adv_txg);
-
+    gpio_toggle(DEBUG_ADV_TXCB_GPIO);
     return BLE_LL_SCHED_STATE_RUNNING;
 
 adv_tx_done:
+    gpio_toggle(DEBUG_ADV_TXCB_GPIO);
     ble_ll_adv_tx_done(advsm);
     return BLE_LL_SCHED_STATE_DONE;
 }
@@ -4636,6 +4640,7 @@ static void
 ble_ll_adv_done(struct ble_ll_adv_sm *advsm)
 
 {
+    gpio_toggle(DEBUG_ADV_DONECB_GPIO);
     int rc;
     int resched_pdu;
     uint8_t mask;
@@ -4656,6 +4661,7 @@ ble_ll_adv_done(struct ble_ll_adv_sm *advsm)
         /* stop advertising this was due to transmitting connection response */
         if (advsm->flags & BLE_LL_ADV_SM_FLAG_CONN_RSP_TXD) {
             ble_ll_adv_sm_stop(advsm);
+            gpio_toggle(DEBUG_ADV_DONECB_GPIO);
             return;
         }
     }
@@ -4738,6 +4744,7 @@ ble_ll_adv_done(struct ble_ll_adv_sm *advsm)
                 advsm->aux_active &&
                 advsm->adv_pdu_start_time > AUX_CURRENT(advsm)->start_time) {
             ble_ll_adv_drop_event(advsm);
+            gpio_toggle(DEBUG_ADV_DONECB_GPIO);
             return;
         }
 #endif
@@ -4757,13 +4764,14 @@ ble_ll_adv_done(struct ble_ll_adv_sm *advsm)
                 !advsm->aux_active) {
             ble_ll_adv_sm_stop_timeout(advsm);
         }
-
+        gpio_toggle(DEBUG_ADV_DONECB_GPIO);
         return;
     }
 #else
     if ((advsm->props & BLE_HCI_LE_SET_EXT_ADV_PROP_HD_DIRECTED) &&
             (advsm->adv_pdu_start_time >= advsm->adv_end_time)) {
         ble_ll_adv_sm_stop_timeout(advsm);
+        gpio_toggle(DEBUG_ADV_DONECB_GPIO);
         return;
     }
 #endif
@@ -4792,6 +4800,7 @@ ble_ll_adv_done(struct ble_ll_adv_sm *advsm)
     ble_ll_adv_set_sched(advsm);
 
     if (!resched_pdu) {
+        gpio_toggle(DEBUG_ADV_DONECB_GPIO);
         ble_ll_adv_reschedule_event(advsm);
         return;
     }
@@ -4805,6 +4814,7 @@ ble_ll_adv_done(struct ble_ll_adv_sm *advsm)
         STATS_INC(ble_ll_stats, adv_resched_pdu_fail);
         ble_npl_eventq_put(&g_ble_ll_data.ll_evq, &advsm->adv_txdone_ev);
     }
+    gpio_toggle(DEBUG_ADV_DONECB_GPIO);
 }
 
 static void
@@ -5007,12 +5017,14 @@ ble_ll_adv_get_peer_rpa(struct ble_ll_adv_sm *advsm)
 void
 ble_ll_adv_wfr_timer_exp(void)
 {
+    gpio_toggle(DEBUG_ADV_WFRTIMEOUT_GPIO);
 #if MYNEWT_VAL(BLE_LL_CFG_FEAT_LL_EXT_ADV)
     g_ble_ll_cur_adv_sm->aux_not_scanned = 1;
 #endif
 
     ble_phy_disable();
     ble_ll_adv_tx_done(g_ble_ll_cur_adv_sm);
+    gpio_toggle(DEBUG_ADV_WFRTIMEOUT_GPIO);
 }
 
 /**
