@@ -499,6 +499,7 @@ main(void)
 			printf("cnt %ld\n",hal_timer_read(4));
 			cache_test_cb(NULL);
 		}
+		#endif
     }
     return 0;
 }
