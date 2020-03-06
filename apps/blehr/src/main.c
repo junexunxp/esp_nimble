@@ -86,7 +86,9 @@ blehr_advertise(void)
     fields.name = (uint8_t *)device_name;
     fields.name_len = strlen(device_name);
     fields.name_is_complete = 1;
-
+	fields.uuids16 = BLE_UUID16 (BLE_UUID16_DECLARE(GATT_HRS_UUID));
+	fields.num_uuids16 = 1;
+	fields.uuids16_is_complete = 1;
     rc = ble_gap_adv_set_fields(&fields);
     if (rc != 0) {
         MODLOG_DFLT(ERROR, "error setting advertisement data; rc=%d\n", rc);
