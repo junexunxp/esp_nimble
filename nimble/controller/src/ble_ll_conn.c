@@ -43,6 +43,7 @@
 #include "controller/ble_hw.h"
 #include "controller/ble_ll_utils.h"
 #include "ble_ll_conn_priv.h"
+#include "gpio_debug.h"
 
 #if (BLETEST_THROUGHPUT_TEST == 1)
 extern void bletest_completed_pkt(uint16_t handle);
@@ -1173,6 +1174,7 @@ ble_ll_conn_event_start_cb(struct ble_ll_sched_item *sch)
     uint32_t usecs;
     uint32_t start;
     struct ble_ll_conn_sm *connsm;
+	gpio_toggle(SCHEDULE_START);
 
     /* XXX: note that we can extend end time here if we want. Look at this */
 
