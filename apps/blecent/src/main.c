@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+#if 0
 #include <assert.h>
 #include <string.h>
 #include "os/mynewt.h"
@@ -24,6 +24,7 @@
 
 /* BLE */
 #include "nimble/ble.h"
+#include "controller/ble_ll.h"
 #include "host/ble_hs.h"
 #include "host/util/util.h"
 
@@ -353,6 +354,7 @@ blecent_gap_event(struct ble_gap_event *event, void *arg)
 
     switch (event->type) {
     case BLE_GAP_EVENT_DISC:
+	case BLE_GAP_EVENT_EXT_DISC:
         rc = ble_hs_adv_parse_fields(&fields, event->disc.data,
                                      event->disc.length_data);
         if (rc != 0) {
@@ -488,6 +490,23 @@ blecent_on_sync(void)
     blecent_scan();
 }
 
+extern void throughput_pins_set(int index, int value);
+void throughput_pins_set(int index, int value){
+
+
+}
+extern void throughput_pins_toggle(int index);
+void throughput_pins_toggle(int index){
+
+
+}
+
+void bletest_completed_pkt(uint16_t handle){
+
+
+}
+
+
 /**
  * main
  *
@@ -523,3 +542,4 @@ main(void)
 
     return 0;
 }
+#endif
