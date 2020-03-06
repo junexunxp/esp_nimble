@@ -37,13 +37,41 @@
 /* BLE */
 #include "nimble/ble.h"
 #include "host/ble_hs.h"
+#include "host/ble_gap.h"
+#include "../src/ble_hs_priv.h"
+
+
+
 #include "host/util/util.h"
 #include "services/gap/ble_svc_gap.h"
 
+
+
+
 /* Application-specified header. */
 #include "bleprph.h"
+#include "nrfx_nvmc.h"
+#include "nrf52840.h"
 
+#include "gpio_debug.h"
+#define TEST_THROUGHPUT		0
+#define CACHE_TEST			0
+#if TEST_THROUGHPUT
+static uint16_t conn_handle = 0xffff;
+void throughput_run(uint16_t conn_handle);
+
+void throughput_ccd_set(uint8_t value);
+void throughput_allow_tx(uint8_t allow);
+#else
+
+void bletest_completed_pkt(uint16_t handle){
+}
+
+
+
+#endif
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
+
 
 /**
  * Logs information about a connection to the console.
@@ -123,7 +151,7 @@ bleprph_advertise(void)
     fields.name_is_complete = 1;
 
     fields.uuids16 = (ble_uuid16_t[]){
-        BLE_UUID16_INIT(GATT_SVR_SVC_ALERT_UUID)
+        BLE_UUID16_INIT(0x00ff)
     };
     fields.num_uuids16 = 1;
     fields.uuids16_is_complete = 1;
@@ -183,7 +211,18 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
 #endif
         }
         MODLOG_DFLT(INFO, "\n");
-
+		#if TEST_THROUGHPUT
+		conn_handle = event->connect.conn_handle;
+		//Modify @June
+		//Set to 2M phy
+		ble_gap_set_prefered_le_phy(conn_handle, 4, 4, 2);
+		struct ble_gap_upd_params params={0};
+		params.itvl_min = 320;//32;
+		params.itvl_max = 320;//32;
+		params.supervision_timeout =600;
+		ble_gap_update_params(conn_handle, &params);
+		ble_hs_hci_util_set_data_len(conn_handle,251,17040);
+		#endif
         if (event->connect.status != 0) {
             /* Connection failed; resume advertising. */
             bleprph_advertise();
@@ -201,6 +240,11 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
 
         /* Connection terminated; resume advertising. */
         bleprph_advertise();
+#if TEST_THROUGHPUT
+
+		conn_handle = 0xffff;
+		throughput_ccd_set(0);
+#endif
         return 0;
 
     case BLE_GAP_EVENT_CONN_UPDATE:
@@ -239,6 +283,9 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
                     event->subscribe.cur_notify,
                     event->subscribe.prev_indicate,
                     event->subscribe.cur_indicate);
+		#if TEST_THROUGHPUT
+		throughput_ccd_set(event->subscribe.cur_notify);
+		#endif
         return 0;
 
     case BLE_GAP_EVENT_MTU:
@@ -263,6 +310,11 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
          * continue with the pairing operation.
          */
         return BLE_GAP_REPEAT_PAIRING_RETRY;
+    case BLE_GAP_EVENT_NOTIFY_TX:
+   #if TEST_THROUGHPUT
+		throughput_allow_tx(1);	
+   #endif
+		break;
 
 #if MYNEWT_VAL(BLEPRPH_LE_PHY_SUPPORT)
     case BLE_GAP_EVENT_PHY_UPDATE_COMPLETE:
@@ -294,6 +346,19 @@ bleprph_on_sync(void)
     bleprph_advertise();
 }
 
+#if CACHE_TEST
+void cache_test_cb(struct os_event *ev){
+	printf("cache hit %ld, cache miss %ld\n",nrf_nvmc_icache_hit_get(NRF_NVMC),nrf_nvmc_icache_miss_get(NRF_NVMC));
+	nrf_nvmc_icache_hit_miss_reset(NRF_NVMC);
+
+}
+#endif
+
+
+//static struct os_event cache_test_ev = {
+ //   .ev_cb = cache_test_cb,
+//};
+
 /**
  * main
  *
@@ -310,6 +375,7 @@ main(void)
     static char ver_str[IMGMGR_NMGR_MAX_VER];
 #endif
     int rc;
+	gpio_dbug_init();
 
     /* Initialize OS */
     sysinit();
@@ -321,6 +387,10 @@ main(void)
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
     rc = gatt_svr_init();
+    assert(rc == 0);
+
+    /* Set the default device name. */
+    rc = ble_svc_gap_device_name_set("Throughput_test");
     assert(rc == 0);
 
 #if MYNEWT_VAL(BLE_SVC_DIS_FIRMWARE_REVISION_READ_PERM) >= 0
@@ -335,6 +405,10 @@ main(void)
 #endif
 
     conf_load();
+#if CACHE_TEST
+	nrfx_nvmc_icache_enable();
+#endif
+
 
     /* If this app is acting as the loader in a split image setup, jump into
      * the second stage application instead of starting the OS.
@@ -352,8 +426,20 @@ main(void)
     /*
      * As the last thing, process events from default event queue.
      */
+    #if CACHE_TEST
+	uint32_t ticks = os_cputime_get32();
+	#endif
     while (1) {
         os_eventq_run(os_eventq_dflt_get());
+		#if TEST_THROUGHPUT
+		throughput_run(conn_handle);
+		#endif
+		#if CACHE_TEST
+		if(os_cputime_get32() - ticks > 20000){
+			ticks = os_cputime_get32();
+			printf("cnt %ld\n",hal_timer_read(4));
+			cache_test_cb(NULL);
+		}
     }
     return 0;
 }

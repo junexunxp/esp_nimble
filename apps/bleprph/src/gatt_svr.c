@@ -24,6 +24,7 @@
 #include "host/ble_hs.h"
 #include "host/ble_uuid.h"
 #include "bleprph.h"
+#define TEST_THROUGHPUT		0
 
 /**
  * The vendor specific security test service consists of two characteristics:
@@ -50,6 +51,7 @@ static const ble_uuid128_t gatt_svr_chr_sec_test_static_uuid =
                          0xe1, 0x45, 0x7e, 0x89, 0x9e, 0x65, 0x3a, 0x5c);
 
 static uint8_t gatt_svr_sec_test_static_val;
+int throughput_test_init(void );
 
 static int
 gatt_svr_chr_access_sec_test(uint16_t conn_handle, uint16_t attr_handle,
@@ -177,6 +179,10 @@ gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg)
         MODLOG_DFLT(DEBUG, "registering descriptor %s with handle=%d\n",
                     ble_uuid_to_str(ctxt->dsc.dsc_def->uuid, buf),
                     ctxt->dsc.handle);
+		if(ble_uuid_u16(ctxt->chr.chr_def->uuid) == 0xff01){
+
+			printf("ccd handle value %d\n",ctxt->dsc.handle);
+		}
         break;
 
     default:
@@ -199,6 +205,10 @@ gatt_svr_init(void)
     if (rc != 0) {
         return rc;
     }
-
+#if TEST_THROUGHPUT
+	return throughput_test_init();
+#else
     return 0;
+#endif
+    
 }
