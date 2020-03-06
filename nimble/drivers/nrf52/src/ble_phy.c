@@ -38,6 +38,8 @@
 #include "core_cm4.h"
 #endif
 
+#include "gpio_debug.h"
+
 #if MYNEWT_VAL(BLE_LL_CFG_FEAT_LE_CODED_PHY)
 #if !MYNEWT_VAL_CHOICE(MCU_TARGET, nRF52840) && !MYNEWT_VAL_CHOICE(MCU_TARGET, nRF52811)
 #error LE Coded PHY can only be enabled on nRF52811 or nRF52840
@@ -605,6 +607,8 @@ ble_phy_set_start_time(uint32_t cputime, uint8_t rem_usecs, bool tx)
     NRF_TIMER0->TASKS_CLEAR = 1;
     NRF_TIMER0->CC[0] = rem_usecs;
     NRF_TIMER0->EVENTS_COMPARE[0] = 0;
+	//Enable interrupt
+	//NRF_TIMER0->INTENSET |= (1<<16);
 
     /* Set RTC compare to start TIMER0 */
     NRF_RTC0->EVENTS_COMPARE[0] = 0;
@@ -1262,6 +1266,7 @@ ble_phy_isr(void)
          * regular radio disabled event below. In other case radio was disabled
          * on purpose and there's nothing more to handle so we can clear mask.
          */
+        gpio_toggle(RX_START);
         if (ble_phy_rx_start_isr()) {
             irq_en &= ~RADIO_INTENCLR_DISABLED_Msk;
         }
@@ -1271,16 +1276,19 @@ ble_phy_isr(void)
     if ((irq_en & RADIO_INTENCLR_DISABLED_Msk) && NRF_RADIO->EVENTS_DISABLED) {
         if (g_ble_phy_data.phy_state == BLE_PHY_STATE_RX) {
             NRF_RADIO->EVENTS_DISABLED = 0;
+			gpio_toggle(WFR_TIMEOUT);
             ble_ll_wfr_timer_exp(NULL);
         } else if (g_ble_phy_data.phy_state == BLE_PHY_STATE_IDLE) {
             assert(0);
         } else {
+			gpio_toggle(TX_END);
             ble_phy_tx_end_isr();
         }
     }
 
     /* Receive packet end (we dont enable this for transmit) */
     if ((irq_en & RADIO_INTENCLR_END_Msk) && NRF_RADIO->EVENTS_END) {
+		gpio_toggle(RX_END);
         ble_phy_rx_end_isr();
     }
 
@@ -1616,6 +1624,7 @@ int
 ble_phy_tx_set_start_time(uint32_t cputime, uint8_t rem_usecs)
 {
     int rc;
+	gpio_toggle(TX_START_TIME_SET);
 
     ble_phy_trace_u32x2(BLE_PHY_TRACE_ID_START_TX, cputime, rem_usecs);
 
@@ -1657,6 +1666,7 @@ ble_phy_rx_set_start_time(uint32_t cputime, uint8_t rem_usecs)
 {
     bool late = false;
     int rc = 0;
+	gpio_toggle(RX_START_TIME_SET);
 
     ble_phy_trace_u32x2(BLE_PHY_TRACE_ID_START_RX, cputime, rem_usecs);
 
