@@ -355,6 +355,33 @@ void cache_test_cb(struct os_event *ev){
 }
 #endif
 
+void 
+hal_timer_clr(int timer_num){
+
+	struct nrf52_hal_timer *bsptimer = (struct nrf52_hal_timer *)nrf52_hal_timers[timer_num];
+
+
+	NRF_TIMER_Type *rtctimer;
+
+	rtctimer = (NRF_TIMER_Type *)bsptimer->tmr_reg;
+	rtctimer->TASKS_CLEAR = 1;
+
+}
+
+#if 0
+void 
+hal_timer_stop(int timer_num){
+
+	struct nrf52_hal_timer *bsptimer = (struct nrf52_hal_timer *)nrf52_hal_timers[timer_num];
+
+
+	NRF_TIMER_Type *rtctimer;
+	rtctimer = (NRF_TIMER_Type *)bsptimer->tmr_reg;
+	rtctimer->TASKS_STOP = 1;
+
+}
+
+#endif
 
 //static struct os_event cache_test_ev = {
  //   .ev_cb = cache_test_cb,
