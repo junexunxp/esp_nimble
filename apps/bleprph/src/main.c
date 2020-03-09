@@ -57,6 +57,7 @@
 #define TEST_THROUGHPUT		0
 #define CACHE_TEST			0
 #define TMR_TEST			0
+
 #if TEST_THROUGHPUT
 static uint16_t conn_handle = 0xffff;
 void throughput_run(uint16_t conn_handle);
@@ -496,10 +497,6 @@ main(void)
 		}
 		#endif
 
-			printf("cnt %ld\n",hal_timer_read(4));
-			cache_test_cb(NULL);
-		}
-		#endif
     }
     return 0;
 }
