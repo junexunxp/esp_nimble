@@ -56,6 +56,7 @@
 #include "gpio_debug.h"
 #define TEST_THROUGHPUT		0
 #define CACHE_TEST			0
+#define TMR_TEST			1
 #if TEST_THROUGHPUT
 static uint16_t conn_handle = 0xffff;
 void throughput_run(uint16_t conn_handle);
@@ -429,6 +430,12 @@ main(void)
     #if CACHE_TEST
 	uint32_t ticks = os_cputime_get32();
 	#endif
+	#if TMR_TEST
+    #include "nrf52840.h"
+	uint32_t ticks_tmr = os_cputime_get32();
+	hal_timer_init(4, NULL);
+	hal_timer_config(4, 1000000);
+	#endif
     while (1) {
         os_eventq_run(os_eventq_dflt_get());
 		#if TEST_THROUGHPUT
@@ -437,10 +444,19 @@ main(void)
 		#if CACHE_TEST
 		if(os_cputime_get32() - ticks > 20000){
 			ticks = os_cputime_get32();
-			printf("cnt %ld\n",hal_timer_read(4));
 			cache_test_cb(NULL);
 		}
 		#endif
+
+		#if TMR_TEST
+		if(os_cputime_get32() - ticks_tmr > 20000){
+			printf("cnt %ld\n",hal_timer_read(4));
+			extern void hal_timer_clr(int timer_num);
+			hal_timer_clr(4);
+			ticks_tmr = 0;
+		}
+		#endif
+
     }
     return 0;
 }
