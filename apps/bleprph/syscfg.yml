@@ -48,14 +48,14 @@ syscfg.vals:
     BLE_SVC_DIS_FIRMWARE_REVISION_READ_PERM: 1
 
     # Log reboot messages to a flash circular buffer.
-    REBOOT_LOG_FCB: 1
-    LOG_FCB: 1
-    CONFIG_FCB: 1
+#    REBOOT_LOG_FCB: 1
+#    LOG_FCB: 1
+ #   CONFIG_FCB: 1
 
     # Enable smp commands.
-    STATS_MGMT: 1
-    LOG_MGMT: 1
-    CONFIG_MGMT: 1
+ #   STATS_MGMT: 1
+ #   LOG_MGMT: 1
+#    CONFIG_MGMT: 1
 
     # OS main/default task
     OS_MAIN_STACK_SIZE: 512
