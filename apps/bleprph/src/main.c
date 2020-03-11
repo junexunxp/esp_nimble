@@ -56,7 +56,7 @@
 #include "gpio_debug.h"
 #define TEST_THROUGHPUT		0
 #define CACHE_TEST			0
-#define TMR_TEST			1
+#define TMR_TEST			0
 #if TEST_THROUGHPUT
 static uint16_t conn_handle = 0xffff;
 void throughput_run(uint16_t conn_handle);
@@ -355,6 +355,7 @@ void cache_test_cb(struct os_event *ev){
 }
 #endif
 
+#if TMR_TEST
 void 
 hal_timer_clr(int timer_num){
 
@@ -367,8 +368,6 @@ hal_timer_clr(int timer_num){
 	rtctimer->TASKS_CLEAR = 1;
 
 }
-
-#if 0
 void 
 hal_timer_stop(int timer_num){
 
