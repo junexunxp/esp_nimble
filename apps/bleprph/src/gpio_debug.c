@@ -3,7 +3,7 @@
 #include "hal/hal_gpio.h"
 #include "hal/hal_timer.h"
 #include "gpio_debug.h"
-static const int dbug_gpio[8]={0x24,0x24,0x24,0x24,0x25,0x26,0x27,0x28};
+static const int dbug_gpio[8]={0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28};
 
 //static  uint8_t gpio_v[8] = {1};
 void gpio_toggle(uint8_t gpio_indx){
