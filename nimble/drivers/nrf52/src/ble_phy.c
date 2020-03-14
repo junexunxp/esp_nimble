@@ -1247,6 +1247,7 @@ ble_phy_isr(void)
 
     /* Read irq register to determine which interrupts are enabled */
     irq_en = NRF_RADIO->INTENCLR;
+	gpio_toggle(PHY_ISR);
 
     /*
      * NOTE: order of checking is important! Possible, if things get delayed,

@@ -461,7 +461,6 @@ main(void)
         }
     }
 #endif
-
     /*
      * As the last thing, process events from default event queue.
      */
