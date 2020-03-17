@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#if 0
+#if 1
 #include <assert.h>
 #include <string.h>
 #include "os/mynewt.h"
@@ -239,8 +239,8 @@ blecent_scan(void)
     disc_params.passive = 1;
 
     /* Use defaults for the rest of the parameters. */
-    disc_params.itvl = 0;
-    disc_params.window = 0;
+    disc_params.itvl = 0;//0x3E80;
+    disc_params.window = 0;//0x3E80;
     disc_params.filter_policy = 0;
     disc_params.limited = 0;
 
@@ -251,7 +251,7 @@ blecent_scan(void)
                     rc);
     }
 }
-
+#if 0
 /**
  * Indicates whether we should tre to connect to the sender of the specified
  * advertisement.  The function returns a positive result if the device
@@ -276,6 +276,8 @@ blecent_should_connect(const struct ble_gap_disc_desc *disc)
         return rc;
     }
 
+
+
     /* The device has to advertise support for the Alert Notification
      * service (0x1811).
      */
@@ -286,7 +288,9 @@ blecent_should_connect(const struct ble_gap_disc_desc *disc)
     }
 
     return 0;
+
 }
+
 
 /**
  * Connects to the sender of the specified advertisement of it looks
@@ -330,6 +334,26 @@ blecent_connect_if_interesting(const struct ble_gap_disc_desc *disc)
         return;
     }
 }
+#endif
+
+static void count_adv_example(const struct ble_gap_disc_desc *disc){
+	struct ble_hs_adv_fields fields={0};
+	int rc;
+
+
+	rc = ble_hs_adv_parse_fields(&fields, disc->data, disc->length_data);
+	if (rc != 0) {
+		return;
+	}
+
+	static uint32_t adv_count = 0;
+	uint8_t adv_addr[] = {0x01,0x23,0x45,0x67,0x89,0x55};
+	if(memcmp(fields.public_tgt_addr,adv_addr,6) == 0){
+		printf("adv target count %ld\r\n",++adv_count);
+	}
+
+	
+}
 
 /**
  * The nimble host executes this callback when a GAP event occurs.  The
@@ -365,7 +389,8 @@ blecent_gap_event(struct ble_gap_event *event, void *arg)
         print_adv_fields(&fields);
 
         /* Try to connect to the advertiser if it looks interesting. */
-        blecent_connect_if_interesting(&event->disc);
+       // blecent_connect_if_interesting(&event->disc);
+		count_adv_example(&event->disc);
         return 0;
 
     case BLE_GAP_EVENT_CONNECT:
@@ -534,7 +559,7 @@ main(void)
     /* Set the default device name. */
     rc = ble_svc_gap_device_name_set("nimble-blecent");
     assert(rc == 0);
-
+	printf("init done \r\n");
     /* os start should never return. If it does, this should be an error */
     while (1) {
         os_eventq_run(os_eventq_dflt_get());
