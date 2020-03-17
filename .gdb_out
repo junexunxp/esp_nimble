@@ -43,16 +43,16 @@ Connecting to J-Link...
 J-Link is connected.
 Firmware: J-Link OB-SAM3U128-V2-NordicSemi compiled Jan  7 2019 14:07:15
 Hardware: V1.00
-S/N: 683631628
+S/N: 683501728
 Checking target voltage...
 Target voltage: 3.30 V
 Listening on TCP/IP port 3333
 Connecting to target...Connected to target
 Waiting for GDB connection...Connected to 127.0.0.1
 Reading all registers
-Read 4 bytes @ address 0x0001BE7C (Data = 0xE8BDB11C)
-Read 2 bytes @ address 0x0001BE7C (Data = 0xB11C)
-0x0001be7c in ?? ()
+Read 4 bytes @ address 0x0000015C (Data = 0xE7FEE7FE)
+Read 2 bytes @ address 0x0000015C (Data = 0xE7FE)
+0x0000015c in ?? ()
 Received monitor command: reset
 Resetting target
 Resetting target
@@ -78,25 +78,36 @@ Downloading 4096 bytes @ address 0x0001E000
 Downloading 4096 bytes @ address 0x0001F000
 Downloading 4096 bytes @ address 0x00020000
 Downloading 4096 bytes @ address 0x00021000
-Downloading 296 bytes @ address 0x00022000
-Restoring binary file ../../bin/targets/peripheral/app/apps/bleprph/bleprph.img into memory (0xc000 to 0x22128)
-r0             0x7ffe	32766
-r1             0x188102	1605890
-r2             0x4000	16384
-r3             0x188100	1605888
-r4             0x80	128
+Downloading 4096 bytes @ address 0x00022000
+Downloading 4096 bytes @ address 0x00023000
+Downloading 4096 bytes @ address 0x00024000
+Downloading 4096 bytes @ address 0x00025000
+Downloading 4096 bytes @ address 0x00026000
+Downloading 4096 bytes @ address 0x00027000
+Downloading 4096 bytes @ address 0x00028000
+Downloading 4096 bytes @ address 0x00029000
+Downloading 4096 bytes @ address 0x0002A000
+Downloading 4096 bytes @ address 0x0002B000
+Downloading 4096 bytes @ address 0x0002C000
+Downloading 3916 bytes @ address 0x0002D000
+Restoring binary file ../../bin/targets/blecent/app/apps/blecent/blecent.img into memory (0xc000 to 0x2df4c)
+r0             0x0	0
+r1             0x0	0
+r2             0x80000000	2147483648
+r3             0xe000ed00	3758157056
+r4             0x0	0
 r5             0x0	0
-r6             0x1680	5760
-r7             0x2000457c	536888700
-r8             0x1881	6273
-r9             0xffffffff	4294967295
-r10            0xca01	51713
+r6             0x0	0
+r7             0x0	0
+r8             0x0	0
+r9             0x0	0
+r10            0x0	0
 r11            0x0	0
-r12            0x0	0
-sp             0x20000e78	0x20000e78
-lr             0x1bdd9	114137
-pc             0x1be7c	0x1be7c
-xpsr           0x21000000	553648128Reading register (MSP = 0x20040000)
+r12            0xc	12
+sp             0x2003ffb8	0x2003ffb8
+lr             0xfffffff9	4294967289
+pc             0x15c	0x15c
+xpsr           0x61000002	1627389954Reading register (MSP = 0x20040000)
 
 msp            0x20040000	537133056Reading register (PSP = 0x       0)
 
@@ -111,12 +122,12 @@ faultmask      0x0	0Reading register (CONTROL = 0x       0)
 control        0x0	0
 Received monitor command: reset
 Resetting target
+Resetting target
 A debugging session is active.
 
 	Inferior 1 [Remote target] will be killed.
 
 Quit anyway? (y or n) [answered Y; input not from terminal]
-Resetting target
 GDB closed TCP/IP connection
 Restoring target state and closing J-Link connection...
 Shutting down...

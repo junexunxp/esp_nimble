@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#if 1
+#if 0
 #include <assert.h>
 #include <string.h>
 #include "os/mynewt.h"
