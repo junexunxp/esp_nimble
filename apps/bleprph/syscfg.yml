@@ -66,3 +66,9 @@ syscfg.vals:
     MSYS_1_BLOCK_SIZE: 110
 
     BLE_SVC_GAP_DEVICE_NAME: '"nimble-bleprph"'
+
+#host mode configures
+    BLE_CONTROLLER: 0
+    BLE_HCI_TRANSPORT: uart
+    CONSOLE_UART: 0
+    BLE_HCI_UART_FLOW_CTRL: 1
