@@ -71,4 +71,5 @@ syscfg.vals:
     BLE_CONTROLLER: 0
     BLE_HCI_TRANSPORT: uart
     CONSOLE_UART: 0
+    #enable CTS and RTC as default hci project use this
     BLE_HCI_UART_FLOW_CTRL: 1
