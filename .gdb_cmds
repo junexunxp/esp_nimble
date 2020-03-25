@@ -1,7 +1,7 @@
 shell sh -c "trap '' 2; JLinkGDBServer -device nrf52840_xxaa -speed 1000 -if SWD -port 3333 -singlerun   &" 
 target remote localhost:3333
 mon reset
-restore ../../bin/targets/blecent/app/apps/blecent/blecent.img binary 0xc000
+restore ../../bin/targets/peripheral/app/apps/bleprph/bleprph.img binary 0xc000
 info reg
 mon reset
 quit

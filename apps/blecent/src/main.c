@@ -230,7 +230,7 @@ blecent_scan(void)
     /* Tell the controller to filter duplicates; we don't want to process
      * repeated advertisements from the same device.
      */
-    disc_params.filter_duplicates = 1;
+    disc_params.filter_duplicates = 0;
 
     /**
      * Perform a passive scan.  I.e., don't send follow-up scan requests to
@@ -239,8 +239,8 @@ blecent_scan(void)
     disc_params.passive = 1;
 
     /* Use defaults for the rest of the parameters. */
-    disc_params.itvl = 0;//0x3E80;
-    disc_params.window = 0;//0x3E80;
+    disc_params.itvl = 0x3E80;
+    disc_params.window = 0x3E80;
     disc_params.filter_policy = 0;
     disc_params.limited = 0;
 
@@ -336,7 +336,7 @@ blecent_connect_if_interesting(const struct ble_gap_disc_desc *disc)
 }
 #endif
 
-static void count_adv_example(const struct ble_gap_disc_desc *disc){
+static void count_adv_example(const struct ble_gap_ext_disc_desc *disc){
 	struct ble_hs_adv_fields fields={0};
 	int rc;
 
@@ -348,7 +348,8 @@ static void count_adv_example(const struct ble_gap_disc_desc *disc){
 
 	static uint32_t adv_count = 0;
 	uint8_t adv_addr[] = {0x01,0x23,0x45,0x67,0x89,0x55};
-	if(memcmp(fields.public_tgt_addr,adv_addr,6) == 0){
+	uint8_t adv_addr2[]= {0x55,0x89,0x67,0x45,0x23,0x01};
+	if((memcmp(disc->addr.val,adv_addr2,6) == 0)||(memcmp(disc->addr.val,adv_addr,6) == 0)){
 		printf("adv target count %ld\r\n",++adv_count);
 	}
 
@@ -373,24 +374,24 @@ static int
 blecent_gap_event(struct ble_gap_event *event, void *arg)
 {
     struct ble_gap_conn_desc desc;
-    struct ble_hs_adv_fields fields;
+   // struct ble_hs_adv_fields fields;
     int rc;
 
     switch (event->type) {
     case BLE_GAP_EVENT_DISC:
 	case BLE_GAP_EVENT_EXT_DISC:
-        rc = ble_hs_adv_parse_fields(&fields, event->disc.data,
-                                     event->disc.length_data);
-        if (rc != 0) {
-            return 0;
-        }
+        //rc = ble_hs_adv_parse_fields(&fields, event->ext_disc.data,
+         //                            event->ext_disc.length_data);
+        //if (rc != 0) {
+       //     return 0;
+       // }
 
         /* An advertisment report was received during GAP discovery. */
-        print_adv_fields(&fields);
+      //  print_adv_fields(&fields);
 
         /* Try to connect to the advertiser if it looks interesting. */
        // blecent_connect_if_interesting(&event->disc);
-		count_adv_example(&event->disc);
+		count_adv_example(&event->ext_disc);
         return 0;
 
     case BLE_GAP_EVENT_CONNECT:
