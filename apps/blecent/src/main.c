@@ -154,7 +154,7 @@ blecent_read_write_subscribe(const struct peer *peer)
     /* Subscribe to notifications for the Unread Alert Status characteristic.
      * A central enables notifications by writing two bytes (1, 0) to the
      * characteristic's client-characteristic-configuration-descriptor (CCCD).
-     */
+
     dsc = peer_dsc_find_uuid(peer,
                              BLE_UUID16_DECLARE(BLECENT_SVC_ALERT_UUID),
                              BLE_UUID16_DECLARE(BLECENT_CHR_UNR_ALERT_STAT_UUID),

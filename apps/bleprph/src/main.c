@@ -68,7 +68,16 @@ void throughput_allow_tx(uint8_t allow);
 void bletest_completed_pkt(uint16_t handle){
 }
 
+#if TEST_THROUGHPUT
+static uint16_t conn_handle = 0xffff;
+void throughput_run(uint16_t conn_handle);
 
+void throughput_ccd_set(uint8_t value);
+void throughput_allow_tx(uint8_t allow);
+#else
+
+void bletest_completed_pkt(uint16_t handle){
+}
 
 #endif
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
@@ -456,12 +465,14 @@ main(void)
     #if CACHE_TEST
 	uint32_t ticks = os_cputime_get32();
 	#endif
+
 	#if TMR_TEST
     #include "nrf52840.h"
 	uint32_t ticks_tmr = os_cputime_get32();
 	hal_timer_init(4, NULL);
 	hal_timer_config(4, 1000000);
 	#endif
+
     while (1) {
         os_eventq_run(os_eventq_dflt_get());
 		#if TEST_THROUGHPUT
@@ -483,6 +494,9 @@ main(void)
 		}
 		#endif
 
+			printf("cnt %ld\n",hal_timer_read(4));
+			cache_test_cb(NULL);
+		}
     }
     return 0;
 }
