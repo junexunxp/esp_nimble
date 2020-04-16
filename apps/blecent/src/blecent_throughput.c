@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#if 0
+#if 1
 #include <assert.h>
 #include <string.h>
 #include "os/mynewt.h"
@@ -280,7 +280,7 @@ blecent_on_disc_complete(const struct peer *peer, int status, void *arg)
 	//Modify @June
 	//Set to 2M phy
 	//printf("phy update status %d\n",ble_gap_set_prefered_le_phy(peer->conn_handle, 2, 2, 0));
-	//ble_gap_set_prefered_le_phy(peer->conn_handle, 4, 4, 2);
+	//ble_gap_set_prefered_le_phy(peer->conn_handle, 2, 2, 0);
 
     /* Now perform three concurrent GATT procedures against the peer: read,
      * write, and subscribe to notifications.
@@ -315,7 +315,7 @@ blecent_scan(void)
      * Perform a passive scan.  I.e., don't send follow-up scan requests to
      * each advertiser.
      */
-    disc_params.passive = 1;
+    disc_params.passive = 0;
 
     /* Use defaults for the rest of the parameters. */
     disc_params.itvl = 0;
@@ -401,8 +401,73 @@ blecent_connect_if_interesting(const struct ble_gap_disc_desc *disc)
         return;
     }
 }
+#if MYNEWT_VAL(BLE_EXT_ADV)
+
+static int
+blecent_ext_should_connect(const struct ble_gap_ext_disc_desc *disc)
+{
+    struct ble_hs_adv_fields fields;
+    int rc;
+    int i;
+
+    /* The device has to be advertising connectability. */
+    if (disc->sid != 2) {
+
+        return 0;
+    }else{
+
+		return 1;
+    }
+
+    rc = ble_hs_adv_parse_fields(&fields, disc->data, disc->length_data);
+    if (rc != 0) {
+        return rc;
+    }
+
+    /* The device has to advertise support for the Alert Notification
+     * service (0x1811).
+     */
+    for (i = 0; i < fields.num_uuids16; i++) {
+        if (ble_uuid_u16(&fields.uuids16[i].u) == 0x00ff/*BLECENT_SVC_ALERT_UUID*/) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 
+
+static void
+blecent_ext_connect_if_interesting(const struct ble_gap_ext_disc_desc *disc)
+{
+    int rc;
+
+    /* Don't do anything if we don't care about this advertiser. */
+    if (!blecent_ext_should_connect(disc)) {
+        return;
+    }
+
+    /* Scanning must be stopped before a connection can be initiated. */
+    rc = ble_gap_disc_cancel();
+    if (rc != 0) {
+        MODLOG_DFLT(DEBUG, "Failed to cancel scan; rc=%d\n", rc);
+        return;
+    }
+
+    /* Try to connect the the advertiser.  Allow 30 seconds (30000 ms) for
+     * timeout.
+     */
+    rc = ble_gap_ext_connect(BLE_OWN_ADDR_PUBLIC, &disc->addr, 30000, BLE_GAP_LE_PHY_1M_MASK | BLE_GAP_LE_PHY_2M_MASK | BLE_GAP_LE_PHY_CODED_MASK,
+                             NULL, NULL, NULL, blecent_gap_event, NULL);
+    if (rc != 0) {
+        MODLOG_DFLT(ERROR, "Error: Failed to connect to device; addr_type=%d "
+                           "addr=%s\n", disc->addr.type,
+                           addr_str(disc->addr.val));
+        return;
+    }
+}
+#endif
 
 static uint32_t tx_complete_packet_num = 0xffffffff;
 static uint32_t ticks = 0;
@@ -481,12 +546,30 @@ blecent_gap_event(struct ble_gap_event *event, void *arg)
         /* Try to connect to the advertiser if it looks interesting. */
         blecent_connect_if_interesting(&event->disc);
         return 0;
+#if MYNEWT_VAL(BLE_EXT_ADV)
+	case BLE_GAP_EVENT_EXT_DISC:
+		
+		rc = ble_hs_adv_parse_fields(&fields, event->ext_disc.data,
+									event->ext_disc.length_data);
+		if (rc != 0) {
+		   return 0;
+		}
+
+		/* An advertisment report was received during GAP discovery. */
+		//print_adv_fields(&fields);
+
+		/* Try to connect to the advertiser if it looks interesting. */
+		blecent_ext_connect_if_interesting(&event->ext_disc);
+
+		return 0;
+#endif
 
     case BLE_GAP_EVENT_CONNECT:
         /* A new connection was established or a connection attempt failed. */
         if (event->connect.status == 0) {
             /* Connection successfully established. */
             MODLOG_DFLT(INFO, "Connection established ");
+			ble_gap_set_prefered_le_phy(event->connect.conn_handle, 7, 7, 0);
 
             rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
             assert(rc == 0);

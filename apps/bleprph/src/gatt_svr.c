@@ -24,7 +24,7 @@
 #include "host/ble_hs.h"
 #include "host/ble_uuid.h"
 #include "bleprph.h"
-#define TEST_THROUGHPUT		0
+#define TEST_THROUGHPUT		1
 
 /**
  * The vendor specific security test service consists of two characteristics:

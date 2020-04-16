@@ -8,7 +8,7 @@
 #include "host/ble_uuid.h"
 #include "bleprph.h"
 
-#if 0
+#if 1
 //coded phy 490 +18
 #define NOTIFY_LEN			495//490
 uint8_t gatt_svr_throughput_static_val[NOTIFY_LEN/*241*/];
@@ -255,7 +255,7 @@ int throughput_test_init(void ){
 	for(;cnt<NOTIFY_LEN;cnt++){
 		gatt_svr_throughput_static_val[cnt] = cnt&0x00ff;
 	}
-	
+	//ble_gap_set_prefered_default_le_phy(7,7);
 	gatt_svr_throughput_static_val[NOTIFY_LEN -1] = check_sum(gatt_svr_throughput_static_val,NOTIFY_LEN-1);
 	printf("notify value last 4 bytes 0x%x, 0x%x 0x%x, 0x%x\r\n",gatt_svr_throughput_static_val[NOTIFY_LEN-4],gatt_svr_throughput_static_val[NOTIFY_LEN-3],
 																gatt_svr_throughput_static_val[NOTIFY_LEN-2],gatt_svr_throughput_static_val[NOTIFY_LEN-1]);
