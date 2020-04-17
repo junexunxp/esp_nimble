@@ -22,7 +22,16 @@ syscfg.defs:
     BTTESTER_PIPE_UART:
         description: 'Set communication pipe to UART'
         value: 1
-
+        
+    BLE_PUBLIC_DEV_ADDR:
+        description: >
+            Allows the target or app to override the public device address
+            used by the controller. If all zero, the controller will
+            attempt to retrieve the public device address from its
+            chip specific location. If non-zero, this address will
+            be used.
+        value: "(uint8_t[6]){0x00, 0x00, 0x00, 0x00, 0x00, 0x00}"
+        
     BTTESTER_PIPE_RTT:
         description: 'Set communication pipe to RTT'
         value: 0
@@ -120,3 +129,17 @@ syscfg.vals:
 
     BLE_MESH_ADV_BUF_COUNT: 20
     BLE_MESH_TX_SEG_MAX: 6
+#host only mode
+    BLE_CONTROLLER: 0
+    UART_1: 1
+    UART_1_PIN_TX: 0x21
+    UART_1_PIN_RX: 0x22
+    UART_1_PIN_CTS: 0x23
+    UART_1_PIN_RTS: 0x24
+    BLE_HCI_UART_PORT: 1
+    
+    BLE_HCI_TRANSPORT: uart
+    BLE_HCI_UART_BAUD: 115200
+    BLE_PUBLIC_DEV_ADDR: "((uint8_t[6]){0x01,0x20,0x03,0x40,0x05,0x06})"
+    #enable CTS and RTC as default hci project use this
+   # BLE_HCI_UART_FLOW_CTRL: 1

@@ -24,7 +24,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 #include "host/ble_gap.h"
 #include "host/util/util.h"
 #include "console/console.h"

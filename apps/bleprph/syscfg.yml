@@ -68,8 +68,20 @@ syscfg.vals:
     BLE_SVC_GAP_DEVICE_NAME: '"nimble-bleprph"'
 
 #host mode configures
-    BLE_CONTROLLER: 0
-    BLE_HCI_TRANSPORT: uart
-    CONSOLE_UART: 0
+  #  BLE_CONTROLLER: 0
+#    BLE_HCI_TRANSPORT: uart
+ #   CONSOLE_UART: 0
     #enable CTS and RTC as default hci project use this
-    BLE_HCI_UART_FLOW_CTRL: 1
+  #  BLE_HCI_UART_FLOW_CTRL: 1
+  #host only mode
+    BLE_CONTROLLER: 0
+    UART_1: 1
+    UART_1_PIN_TX: 0x21
+    UART_1_PIN_RX: 0x22
+    UART_1_PIN_CTS: 0x23
+    UART_1_PIN_RTS: 0x24
+    BLE_HCI_UART_PORT: 1
+    
+    BLE_HCI_TRANSPORT: uart
+    BLE_HCI_UART_BAUD: 115200
+    BLE_PUBLIC_DEV_ADDR: "((uint8_t[6]){0x01,0x20,0x03,0x40,0x05,0x06})"
