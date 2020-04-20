@@ -64,6 +64,8 @@ int main(int argc, char **argv)
 
 	rc = gatt_svr_init();
 	assert(rc == 0);
+	#include "gpio_debug.h"
+	gpio_dbug_init();
 
 	while (1) {
 		os_eventq_run(os_eventq_dflt_get());

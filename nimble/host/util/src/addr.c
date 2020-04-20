@@ -39,7 +39,16 @@ ble_hs_util_load_rand_addr(ble_addr_t *addr)
         return 0;
     }
 #endif
-
+//For fpga test
+	addr->type = BLE_ADDR_RANDOM;
+	addr->val[0] = 0x11;
+	addr->val[1] = 0x11;
+	addr->val[2] = 0x11;
+	addr->val[3] = 0x22;
+	addr->val[4] = 0x22;
+	addr->val[5] = 0xC2;
+	return 0;
+	
     return BLE_HS_ENOADDR;
 }
 

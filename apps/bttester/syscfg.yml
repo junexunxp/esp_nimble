@@ -140,6 +140,6 @@ syscfg.vals:
     
     BLE_HCI_TRANSPORT: uart
     BLE_HCI_UART_BAUD: 115200
-    BLE_PUBLIC_DEV_ADDR: "((uint8_t[6]){0x01,0x20,0x03,0x40,0x05,0x06})"
+ #   BLE_PUBLIC_DEV_ADDR: "((uint8_t[6]){0x01,0x20,0x03,0x40,0x05,0x06})"
     #enable CTS and RTC as default hci project use this
    # BLE_HCI_UART_FLOW_CTRL: 1

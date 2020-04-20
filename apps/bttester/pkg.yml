@@ -25,6 +25,15 @@ pkg.homepage: "http://mynewt.apache.org/"
 pkg.keywords:
 
 pkg.deps:
+    - "@apache-mynewt-core/sys/shell"
+    - "@apache-mynewt-nimble/nimble/host"
+    - "@apache-mynewt-nimble/nimble/host/util"
+    - "@apache-mynewt-nimble/nimble/host/services/gap"
+    - "@apache-mynewt-nimble/nimble/host/services/gatt"
+    - "@apache-mynewt-nimble/nimble/host/services/dis"
+    - "@apache-mynewt-nimble/nimble/host/store/ram"
+    - "@apache-mynewt-core/hw/drivers/uart"
+    
     - "@apache-mynewt-core/boot/split"
     - "@mcuboot/boot/bootutil"
     - "@apache-mynewt-core/kernel/os"
