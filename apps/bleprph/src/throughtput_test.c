@@ -8,7 +8,7 @@
 #include "host/ble_uuid.h"
 #include "bleprph.h"
 
-#if 1
+#if 0
 //coded phy 490 +18
 #define NOTIFY_LEN			495//490
 uint8_t gatt_svr_throughput_static_val[NOTIFY_LEN/*241*/];

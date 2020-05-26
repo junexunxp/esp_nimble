@@ -569,7 +569,7 @@ blecent_gap_event(struct ble_gap_event *event, void *arg)
         if (event->connect.status == 0) {
             /* Connection successfully established. */
             MODLOG_DFLT(INFO, "Connection established ");
-			ble_gap_set_prefered_le_phy(event->connect.conn_handle, 7, 7, 0);
+			ble_gap_set_prefered_le_phy(event->connect.conn_handle, 7, 7, 1);
 
             rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
             assert(rc == 0);

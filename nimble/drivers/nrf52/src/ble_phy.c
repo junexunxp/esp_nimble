@@ -46,6 +46,8 @@
 #endif
 #endif
 
+
+#define DEBUG_PPI_CRC		1
 /*
  * NOTE: This code uses a couple of PPI channels so care should be taken when
  *       using PPI somewhere else.
@@ -841,7 +843,7 @@ ble_phy_rx_xcvr_setup(void)
 #endif
 
     /* Turn off trigger TXEN on output compare match and AAR on bcmatch */
-    NRF_PPI->CHENCLR = PPI_CHEN_CH20_Msk | PPI_CHEN_CH23_Msk;
+    NRF_PPI->CHENCLR = PPI_CHEN_CH20_Msk | PPI_CHEN_CH23_Msk | /*Debug CRC*/PPI_CHEN_CH11_Msk;;
 
     /* Reset the rx started flag. Used for the wait for response */
     g_ble_phy_data.phy_rx_started = 0;
@@ -900,7 +902,7 @@ ble_phy_tx_end_isr(void)
 
     /* Better be in TX state! */
     assert(g_ble_phy_data.phy_state == BLE_PHY_STATE_TX);
-
+	
     /* Clear events and clear interrupt on disabled event */
     NRF_RADIO->EVENTS_DISABLED = 0;
     NRF_RADIO->INTENCLR = RADIO_INTENCLR_DISABLED_Msk;
@@ -1128,6 +1130,11 @@ ble_phy_rx_start_isr(void)
 #endif
 
     dptr = (uint8_t *)&g_ble_phy_rx_buf[0];
+#if DEBUG_PPI_CRC
+//Debug Empty packet CRC end time
+	NRF_PPI->CHENSET = PPI_CHEN_CH11_Msk;
+	NRF_RADIO->BCC = 40;
+#endif
 
     /* Clear events and clear interrupt */
     NRF_RADIO->EVENTS_ADDRESS = 0;
@@ -1442,6 +1449,7 @@ ble_phy_init(void)
 
     /* Configure IFS */
     NRF_RADIO->TIFS = BLE_LL_IFS;
+	
 
     /* Captures tx/rx start in timer0 cc 1 and tx/rx end in timer0 cc 2 */
     NRF_PPI->CHENSET = PPI_CHEN_CH26_Msk | PPI_CHEN_CH27_Msk;
@@ -1782,9 +1790,16 @@ ble_phy_tx(ble_phy_tx_pducb_t pducb, void *pducb_arg, uint8_t end_trans)
     NRF_RADIO->EVENTS_READY = 0;
     NRF_RADIO->EVENTS_END = 0;
     NRF_RADIO->EVENTS_DISABLED = 0;
+#if DEBUG_PPI_CRC
+   shortcuts = RADIO_SHORTS_END_DISABLE_Msk | RADIO_SHORTS_READY_START_Msk | /*DEBUG CRC*/RADIO_SHORTS_ADDRESS_BCSTART_Msk;
+	NRF_PPI->CHENSET = PPI_CHEN_CH11_Msk;
 
+	NRF_RADIO->BCC = 40;
+
+#else
     /* Enable shortcuts for transmit start/end. */
-    shortcuts = RADIO_SHORTS_END_DISABLE_Msk | RADIO_SHORTS_READY_START_Msk;
+    shortcuts = RADIO_SHORTS_END_DISABLE_Msk | RADIO_SHORTS_READY_START_Msk ;
+#endif
     NRF_RADIO->SHORTS = shortcuts;
     NRF_RADIO->INTENSET = RADIO_INTENSET_DISABLED_Msk;
 

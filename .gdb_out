@@ -43,92 +43,39 @@ Connecting to J-Link...
 J-Link is connected.
 Firmware: J-Link OB-SAM3U128-V2-NordicSemi compiled Jan  7 2019 14:07:15
 Hardware: V1.00
-S/N: 683014272
+S/N: 683628609
 Checking target voltage...
 Target voltage: 3.30 V
 Listening on TCP/IP port 3333
 Connecting to target...Connected to target
 Waiting for GDB connection...Connected to 127.0.0.1
 Reading all registers
-Read 4 bytes @ address 0x0003240A (Data = 0xBD38B905)
-Read 2 bytes @ address 0x0003240A (Data = 0xB905)
-0x0003240a in ?? ()
+Read 4 bytes @ address 0x0000DC54 (Data = 0xE8BDB11C)
+Read 2 bytes @ address 0x0000DC54 (Data = 0xB11C)
+0x0000dc54 in ?? ()
 Received monitor command: reset
 Resetting target
 Resetting target
-Downloading 4096 bytes @ address 0x0000C000
-Downloading 4096 bytes @ address 0x0000D000
-Downloading 4096 bytes @ address 0x0000E000
-Downloading 4096 bytes @ address 0x0000F000
-Downloading 4096 bytes @ address 0x00010000
-Downloading 4096 bytes @ address 0x00011000
-Downloading 4096 bytes @ address 0x00012000
-Downloading 4096 bytes @ address 0x00013000
-Downloading 4096 bytes @ address 0x00014000
-Downloading 4096 bytes @ address 0x00015000
-Downloading 4096 bytes @ address 0x00016000
-Downloading 4096 bytes @ address 0x00017000
-Downloading 4096 bytes @ address 0x00018000
-Downloading 4096 bytes @ address 0x00019000
-Downloading 4096 bytes @ address 0x0001A000
-Downloading 4096 bytes @ address 0x0001B000
-Downloading 4096 bytes @ address 0x0001C000
-Downloading 4096 bytes @ address 0x0001D000
-Downloading 4096 bytes @ address 0x0001E000
-Downloading 4096 bytes @ address 0x0001F000
-Downloading 4096 bytes @ address 0x00020000
-Downloading 4096 bytes @ address 0x00021000
-Downloading 4096 bytes @ address 0x00022000
-Downloading 4096 bytes @ address 0x00023000
-Downloading 4096 bytes @ address 0x00024000
-Downloading 4096 bytes @ address 0x00025000
-Downloading 4096 bytes @ address 0x00026000
-Downloading 4096 bytes @ address 0x00027000
-Downloading 4096 bytes @ address 0x00028000
-Downloading 4096 bytes @ address 0x00029000
-Downloading 4096 bytes @ address 0x0002A000
-Downloading 4096 bytes @ address 0x0002B000
-Downloading 4096 bytes @ address 0x0002C000
-Downloading 4096 bytes @ address 0x0002D000
-Downloading 4096 bytes @ address 0x0002E000
-Downloading 4096 bytes @ address 0x0002F000
-Downloading 4096 bytes @ address 0x00030000
-Downloading 4096 bytes @ address 0x00031000
-Downloading 4096 bytes @ address 0x00032000
-Downloading 4096 bytes @ address 0x00033000
-Downloading 4096 bytes @ address 0x00034000
-Downloading 4096 bytes @ address 0x00035000
-Downloading 4096 bytes @ address 0x00036000
-Downloading 4096 bytes @ address 0x00037000
-Downloading 4096 bytes @ address 0x00038000
-Downloading 4096 bytes @ address 0x00039000
-Downloading 4096 bytes @ address 0x0003A000
-Downloading 4096 bytes @ address 0x0003B000
-Downloading 4096 bytes @ address 0x0003C000
-Downloading 4096 bytes @ address 0x0003D000
-Downloading 4096 bytes @ address 0x0003E000
-Downloading 4096 bytes @ address 0x0003F000
-Downloading 4096 bytes @ address 0x00040000
-Downloading 4096 bytes @ address 0x00041000
-Downloading 4096 bytes @ address 0x00042000
-Downloading 2944 bytes @ address 0x00043000
-Restoring binary file ../../bin/targets/tester/app/apps/bttester/bttester.img into memory (0xc000 to 0x43b80)
-r0             0x1	1
-r1             0x2000cbbc	536923068
-r2             0x2c0100	2883840
-r3             0x7ffe	32766
-r4             0x2c0100	2883840
-r5             0x80	128
-r6             0x2580	9600
-r7             0x2b81	11137
+Downloading 4096 bytes @ address 0x00000000
+Downloading 4096 bytes @ address 0x00001000
+Downloading 3840 bytes @ address 0x00002000
+Restoring binary file ../../bin/targets/boot/app/boot/mynewt/mynewt.elf.bin into memory (0x0 to 0x2f00)
+r0             0x77f35	491317
+r1             0xcb	203
+r2             0x4000	16384
+r3             0x0	0
+r4             0x780	1920
+r5             0x0	0
+r6             0x0	0
+r7             0x20003ad4	536885972
 r8             0x0	0
-r9             0x40	64
-r10            0x0	0
+r9             0xffffffff	4294967295
+r10            0xc3ad	50093
 r11            0x0	0
 r12            0x0	0
-sp             0x20004520	0x20004520
-lr             0x32393	205715
-pc             0x3240a	0x3240a
+sp             0x20000218	0x20000218
+lr             0xdbb1	56241
+pc             0xdc54	0xdc54
 xpsr           0x21000000	553648128Reading register (MSP = 0x20040000)
 
 msp            0x20040000	537133056Reading register (PSP = 0x       0)

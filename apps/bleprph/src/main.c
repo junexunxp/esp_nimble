@@ -54,9 +54,9 @@
 #include "nrf52840.h"
 
 #include "gpio_debug.h"
-#define TEST_THROUGHPUT		1
+#define TEST_THROUGHPUT		0
 #define CACHE_TEST			0
-#define TMR_TEST			0
+#define TMR_TEST			1
 #if TEST_THROUGHPUT
 static uint16_t conn_handle = 0xffff;
 void throughput_run(uint16_t conn_handle);
@@ -255,10 +255,10 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
 		conn_handle = event->connect.conn_handle;
 		//Modify @June
 		//Set to 2M phy
-		ble_gap_set_prefered_le_phy(conn_handle, 2, 2, 0);
+		ble_gap_set_prefered_le_phy(conn_handle, 4, 4, 1);
 		struct ble_gap_upd_params params={0};
-		params.itvl_min = 320;//32;
-		params.itvl_max = 320;//32;
+		params.itvl_min = 32;//32;
+		params.itvl_max = 32;//32;
 		params.supervision_timeout =600;
 		ble_gap_update_params(conn_handle, &params);
 		//ble_hs_hci_util_set_data_len(conn_handle,251,17040);
