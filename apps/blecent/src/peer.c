@@ -639,7 +639,7 @@ peer_disc_all(uint16_t conn_handle, peer_disc_fn *disc_cb, void *disc_cb_arg)
     struct peer_svc *svc;
     struct peer *peer;
     int rc;
-
+	return 0;
     peer = peer_find(conn_handle);
     if (peer == NULL) {
         return BLE_HS_ENOTCONN;

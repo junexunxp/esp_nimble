@@ -48,6 +48,11 @@
 
 
 #define DEBUG_PPI_CRC		1
+#define DEBUG_TERM2_END		48
+#define DEBUG_CRC_CODED		45
+#define DEBUG_CRC_1M2M		40
+
+#define DEBUG_BCC_COUNT_BITS	DEBUG_TERM2_END
 /*
  * NOTE: This code uses a couple of PPI channels so care should be taken when
  *       using PPI somewhere else.
@@ -842,9 +847,10 @@ ble_phy_rx_xcvr_setup(void)
     }
 #endif
 
-    /* Turn off trigger TXEN on output compare match and AAR on bcmatch */
-    NRF_PPI->CHENCLR = PPI_CHEN_CH20_Msk | PPI_CHEN_CH23_Msk | /*Debug CRC*/PPI_CHEN_CH11_Msk;;
+	/* Turn off trigger TXEN on output compare match and AAR on bcmatch */
+	NRF_PPI->CHENCLR = PPI_CHEN_CH20_Msk | PPI_CHEN_CH23_Msk;
 
+   
     /* Reset the rx started flag. Used for the wait for response */
     g_ble_phy_data.phy_rx_started = 0;
     g_ble_phy_data.phy_state = BLE_PHY_STATE_RX;
@@ -1133,7 +1139,7 @@ ble_phy_rx_start_isr(void)
 #if DEBUG_PPI_CRC
 //Debug Empty packet CRC end time
 	NRF_PPI->CHENSET = PPI_CHEN_CH11_Msk;
-	NRF_RADIO->BCC = 40;
+	NRF_RADIO->BCC = DEBUG_BCC_COUNT_BITS;
 #endif
 
     /* Clear events and clear interrupt */
@@ -1282,6 +1288,10 @@ ble_phy_isr(void)
 
     /* Check for disabled event. This only happens for transmits now */
     if ((irq_en & RADIO_INTENCLR_DISABLED_Msk) && NRF_RADIO->EVENTS_DISABLED) {
+		#if DEBUG_PPI_CRC
+		/* Turn off trigger GPIO when BC matched*/
+			NRF_PPI->CHENCLR = /*Debug CRC*/PPI_CHEN_CH11_Msk;
+		#endif
         if (g_ble_phy_data.phy_state == BLE_PHY_STATE_RX) {
             NRF_RADIO->EVENTS_DISABLED = 0;
 			gpio_toggle(WFR_TIMEOUT);
@@ -1296,6 +1306,11 @@ ble_phy_isr(void)
 
     /* Receive packet end (we dont enable this for transmit) */
     if ((irq_en & RADIO_INTENCLR_END_Msk) && NRF_RADIO->EVENTS_END) {
+		
+		#if DEBUG_PPI_CRC
+		/* Turn off trigger GPIO when BC matched*/
+			NRF_PPI->CHENCLR = /*Debug CRC*/PPI_CHEN_CH11_Msk;
+		#endif
 		gpio_toggle(RX_END);
         ble_phy_rx_end_isr();
     }
@@ -1793,9 +1808,7 @@ ble_phy_tx(ble_phy_tx_pducb_t pducb, void *pducb_arg, uint8_t end_trans)
 #if DEBUG_PPI_CRC
    shortcuts = RADIO_SHORTS_END_DISABLE_Msk | RADIO_SHORTS_READY_START_Msk | /*DEBUG CRC*/RADIO_SHORTS_ADDRESS_BCSTART_Msk;
 	NRF_PPI->CHENSET = PPI_CHEN_CH11_Msk;
-
-	NRF_RADIO->BCC = 40;
-
+	NRF_RADIO->BCC = DEBUG_BCC_COUNT_BITS;
 #else
     /* Enable shortcuts for transmit start/end. */
     shortcuts = RADIO_SHORTS_END_DISABLE_Msk | RADIO_SHORTS_READY_START_Msk ;

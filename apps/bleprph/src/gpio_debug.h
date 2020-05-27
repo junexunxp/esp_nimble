@@ -3,6 +3,10 @@
 void
 gpio_dbug_init(void);
 void gpio_toggle(uint8_t gpio_indx);
+void gpio_set(uint8_t gpio_indx);
+
+//TMR debug api
+void gpio_dbg_tmr_ppi(void );
 #define DEBUG_GPIO_NOT_AVAILABLE	0xff
 #define DEBUG_ADV_FLOW 0
 #define DEBUG_TIMING 0

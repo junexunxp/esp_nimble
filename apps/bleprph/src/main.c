@@ -54,9 +54,9 @@
 #include "nrf52840.h"
 
 #include "gpio_debug.h"
-#define TEST_THROUGHPUT		0
+#include "timer_debug.h"
+#define TEST_THROUGHPUT		1
 #define CACHE_TEST			0
-#define TMR_TEST			1
 #if TEST_THROUGHPUT
 static uint16_t conn_handle = 0xffff;
 void throughput_run(uint16_t conn_handle);
@@ -256,12 +256,12 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
 		//Modify @June
 		//Set to 2M phy
 		ble_gap_set_prefered_le_phy(conn_handle, 4, 4, 1);
-		struct ble_gap_upd_params params={0};
-		params.itvl_min = 32;//32;
-		params.itvl_max = 32;//32;
-		params.supervision_timeout =600;
-		ble_gap_update_params(conn_handle, &params);
-		//ble_hs_hci_util_set_data_len(conn_handle,251,17040);
+		//struct ble_gap_upd_params params={0};
+		//params.itvl_min = 32;//32;
+		//params.itvl_max = 32;//32;
+		//params.supervision_timeout =600;
+		//ble_gap_update_params(conn_handle, &params);
+		ble_hs_hci_util_set_data_len(conn_handle,251,17040);
 		#endif
         if (event->connect.status != 0) {
             /* Connection failed; resume advertising. */
@@ -395,32 +395,8 @@ void cache_test_cb(struct os_event *ev){
 }
 #endif
 
-#if TMR_TEST
-void 
-hal_timer_clr(int timer_num){
-
-	struct nrf52_hal_timer *bsptimer = (struct nrf52_hal_timer *)nrf52_hal_timers[timer_num];
 
 
-	NRF_TIMER_Type *rtctimer;
-
-	rtctimer = (NRF_TIMER_Type *)bsptimer->tmr_reg;
-	rtctimer->TASKS_CLEAR = 1;
-
-}
-void 
-hal_timer_stop(int timer_num){
-
-	struct nrf52_hal_timer *bsptimer = (struct nrf52_hal_timer *)nrf52_hal_timers[timer_num];
-
-
-	NRF_TIMER_Type *rtctimer;
-	rtctimer = (NRF_TIMER_Type *)bsptimer->tmr_reg;
-	rtctimer->TASKS_STOP = 1;
-
-}
-
-#endif
 
 //static struct os_event cache_test_ev = {
  //   .ev_cb = cache_test_cb,
@@ -443,9 +419,13 @@ main(void)
 #endif
     int rc;
 	gpio_dbug_init();
-
+	
     /* Initialize OS */
     sysinit();
+	
+	//hal_rtc_test();
+
+	//hal_timer_test();
 
     /* Initialize the NimBLE host configuration. */
     ble_hs_cfg.reset_cb = bleprph_on_reset;
@@ -495,12 +475,6 @@ main(void)
     #if CACHE_TEST
 	uint32_t ticks = os_cputime_get32();
 	#endif
-	#if TMR_TEST
-    #include "nrf52840.h"
-	uint32_t ticks_tmr = os_cputime_get32();
-	hal_timer_init(4, NULL);
-	hal_timer_config(4, 1000000);
-	#endif
 	
     while (1) {
         os_eventq_run(os_eventq_dflt_get());
@@ -511,15 +485,6 @@ main(void)
 		if(os_cputime_get32() - ticks > 20000){
 			ticks = os_cputime_get32();
 			cache_test_cb(NULL);
-		}
-		#endif
-
-		#if TMR_TEST
-		if(os_cputime_get32() - ticks_tmr > 20000){
-			printf("cnt %ld\n",hal_timer_read(4));
-			extern void hal_timer_clr(int timer_num);
-			hal_timer_clr(4);
-			ticks_tmr = 0;
 		}
 		#endif
 
