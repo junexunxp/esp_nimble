@@ -3,9 +3,14 @@
 void
 gpio_dbug_init(void);
 void gpio_toggle(uint8_t gpio_indx);
+void gpio_set(uint8_t gpio_indx);
+
+//TMR debug api
+void gpio_dbg_tmr_ppi(void );
 #define DEBUG_GPIO_NOT_AVAILABLE	0xff
 #define DEBUG_ADV_FLOW 0
-#define DEBUG_TIMING 1
+#define DEBUG_TIMING 0
+#define DEBUG_USINGPPI 1
 #if DEBUG_ADV_FLOW
 #define DEBUG_ADV_TXCB_GPIO     0
 #define DEBUG_ADV_TXDONECB_GPIO     1
@@ -41,16 +46,52 @@ void gpio_toggle(uint8_t gpio_indx);
 #define TMR_INTERRUPT	DEBUG_GPIO_NOT_AVAILABLE//7
 #define TMR0_INTERRUPT	DEBUG_GPIO_NOT_AVAILABLE
 #else
-#define SCHEDULE_START     	DEBUG_GPIO_NOT_AVAILABLE
-#define TX_START_TIME_SET 	DEBUG_GPIO_NOT_AVAILABLE
-#define RX_START_TIME_SET 	DEBUG_GPIO_NOT_AVAILABLE
-#define RX_START     		DEBUG_GPIO_NOT_AVAILABLE
+#define SCHEDULE_START     DEBUG_GPIO_NOT_AVAILABLE
+#define TMR0_COMPARE2		DEBUG_GPIO_NOT_AVAILABLE
+#define TMR0_COMPARE0		DEBUG_GPIO_NOT_AVAILABLE
+#define TMR0_TICK			DEBUG_GPIO_NOT_AVAILABLE
+#define TMR0_OVERFLOW		DEBUG_GPIO_NOT_AVAILABLE
+#define OS_TICK		 DEBUG_GPIO_NOT_AVAILABLE
+#define OS_IDLE_TASK_GPIO	DEBUG_GPIO_NOT_AVAILABLE
+#define PHY_ISR			DEBUG_GPIO_NOT_AVAILABLE
 
-#define WFR_TIMEOUT   		DEBUG_GPIO_NOT_AVAILABLE
-#define TX_END       		DEBUG_GPIO_NOT_AVAILABLE
-#define RX_END       		DEBUG_GPIO_NOT_AVAILABLE
+
+
+#define TX_START_TIME_SET DEBUG_GPIO_NOT_AVAILABLE
+#define RX_START_TIME_SET DEBUG_GPIO_NOT_AVAILABLE
+#define RX_START     DEBUG_GPIO_NOT_AVAILABLE
+
+#define WFR_TIMEOUT   DEBUG_GPIO_NOT_AVAILABLE
+#define TX_END       DEBUG_GPIO_NOT_AVAILABLE
+#define RX_END       DEBUG_GPIO_NOT_AVAILABLE//6
+#define TMR_INTERRUPT	DEBUG_GPIO_NOT_AVAILABLE//7
+#define TMR0_INTERRUPT	DEBUG_GPIO_NOT_AVAILABLE
+#endif
+
+#if DEBUG_USINGPPI
+#define DEBUG_EVENTS_READY_GPIO_INDX		0
+#define DEBUG_ACCESSADDR_GPIO_INDX			1
+#define DEBUG_EVENTSEND_GPIO_INDX			2
+#define DEBUG_EVENTSDIS_GPIO_INDX			3
+#define DEBUG_TXEN_GPIO_INDX				4
+#define DEBUG_CRCEND_GPIO_INDX				5
+#define DEBUG_DUPLICATE_GPIO_INDX			6
+#else
+
+#define DEBUG_ACCESSADDR_GPIO_INDX			DEBUG_GPIO_NOT_AVAILABLE
+#define DEBUG_EVENTSEND_GPIO_INDX			DEBUG_GPIO_NOT_AVAILABLE
+#define DEBUG_EVENTSDIS_GPIO_INDX			DEBUG_GPIO_NOT_AVAILABLE
 #endif
 
 
+inline void gpio_clr_immediately(uint8_t indx){
+	NRF_P1->OUTCLR = (1<<indx);
+}
+inline void gpio_set_immediately(uint8_t indx){
+	NRF_P1->OUTSET = (1<<indx);
+}
+void gpio_clr(uint8_t gpio_indx);
 
+void gpio_dbg_access_addr_ppi_setup_rx(void );
+void gpio_dbg_access_addr_ppi_setup_tx(void );
 #endif

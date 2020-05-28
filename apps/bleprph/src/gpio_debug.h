@@ -69,12 +69,13 @@ void gpio_dbg_tmr_ppi(void );
 #endif
 
 #if DEBUG_USINGPPI
-#define DEBUG_ACCESSADDR_GPIO_INDX			0
-#define DEBUG_EVENTSEND_GPIO_INDX			1
-#define DEBUG_EVENTSDIS_GPIO_INDX			2
-#define DEBUG_TXEN_GPIO_INDX				3
-#define DEBUG_CRCEND_GPIO_INDX				4
-#define DEBUG_DUPLICATE_GPIO_INDX			5
+#define DEBUG_EVENTS_READY_GPIO_INDX		0
+#define DEBUG_ACCESSADDR_GPIO_INDX			1
+#define DEBUG_EVENTSEND_GPIO_INDX			2
+#define DEBUG_EVENTSDIS_GPIO_INDX			3
+#define DEBUG_TXEN_GPIO_INDX				4
+#define DEBUG_CRCEND_GPIO_INDX				5
+#define DEBUG_DUPLICATE_GPIO_INDX			6
 #else
 
 #define DEBUG_ACCESSADDR_GPIO_INDX			DEBUG_GPIO_NOT_AVAILABLE
@@ -83,5 +84,14 @@ void gpio_dbg_tmr_ppi(void );
 #endif
 
 
+inline void gpio_clr_immediately(uint8_t indx){
+	NRF_P1->OUTCLR = (1<<indx);
+}
+inline void gpio_set_immediately(uint8_t indx){
+	NRF_P1->OUTSET = (1<<indx);
+}
+void gpio_clr(uint8_t gpio_indx);
 
+void gpio_dbg_access_addr_ppi_setup_rx(void );
+void gpio_dbg_access_addr_ppi_setup_tx(void );
 #endif

@@ -43,6 +43,7 @@ syscfg.vals:
     BLE_ROLE_CENTRAL: 0
     BLE_ROLE_OBSERVER: 0
     BLE_ROLE_PERIPHERAL: 1
+    WATCHDOG_INTERVAL: 0
 
     # Configure DIS
     BLE_SVC_DIS_FIRMWARE_REVISION_READ_PERM: 1
@@ -58,7 +59,7 @@ syscfg.vals:
 #    CONFIG_MGMT: 1
 
     # OS main/default task
-    OS_MAIN_STACK_SIZE: 512
+    OS_MAIN_STACK_SIZE: 2048
 
     # Lots of smaller mbufs are required for smp using typical BLE ATT MTU
     # values.
