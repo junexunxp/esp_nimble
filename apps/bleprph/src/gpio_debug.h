@@ -82,6 +82,10 @@ void gpio_dbg_tmr_ppi(void );
 #define DEBUG_EVENTSDIS_GPIO_INDX			DEBUG_GPIO_NOT_AVAILABLE
 #endif
 
-
-
+inline void gpio_clr_immediately(uint8_t indx){
+	NRF_P1->OUTCLR = (1<<indx);
+}
+inline void gpio_set_immediately(uint8_t indx){
+	NRF_P1->OUTSET = (1<<indx);
+}
 #endif

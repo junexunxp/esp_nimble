@@ -49,6 +49,7 @@ static void
 ble_phy_dbg_setup_ppi(void)
 {
     int gpiote_idx __attribute__((unused)) = 8;
+	return;
     /*
      * We setup GPIOTE starting from last configuration index to minimize risk
      * of conflict with GPIO setup via hal. It's not great solution, but since
@@ -98,9 +99,17 @@ ble_phy_dbg_setup_ppi(void)
 	NRF_PPI->CH[12].EEP = (uint32_t)&(NRF_RADIO->EVENTS_BCMATCH);
 	NRF_PPI->CH[12].TEP = (uint32_t)&(NRF_GPIOTE->TASKS_CLR[gpiote_idx]);
 	NRF_PPI->FORK[8].TEP = (uint32_t)&(NRF_GPIOTE->TASKS_SET[gpiote_idx]);
-	NRF_PPI->CHENSET = PPI_CHEN_CH7_Msk | PPI_CHEN_CH8_Msk | PPI_CHEN_CH9_Msk | PPI_CHEN_CH10_Msk  | PPI_CHEN_CH12_Msk;
+	//NRF_PPI->CHENSET = PPI_CHEN_CH7_Msk | PPI_CHEN_CH8_Msk | PPI_CHEN_CH9_Msk | PPI_CHEN_CH10_Msk  | PPI_CHEN_CH12_Msk;
+	NRF_PPI->CHG[0] = PPI_CHEN_CH7_Msk | PPI_CHEN_CH8_Msk | PPI_CHEN_CH9_Msk | PPI_CHEN_CH10_Msk  | PPI_CHEN_CH12_Msk;
+	NRF_PPI->CHG[1] = PPI_CHEN_CH7_Msk | PPI_CHEN_CH8_Msk | PPI_CHEN_CH9_Msk | PPI_CHEN_CH10_Msk  | PPI_CHEN_CH12_Msk;
+
+	
+	NRF_PPI->TASKS_CHG[1].DIS = 1;
+	NRF_PPI->TASKS_CHG[0].EN = 1;
 
 }
+
+
 
 void gpio_dbg_tmr_ppi(void ){
 	static int k = 0;

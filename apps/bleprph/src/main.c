@@ -55,6 +55,8 @@
 
 #include "gpio_debug.h"
 #include "timer_debug.h"
+#include "radio_debug.h"
+#include "hal/hal_watchdog.h"
 #define TEST_THROUGHPUT		1
 #define CACHE_TEST			0
 #if TEST_THROUGHPUT
@@ -419,10 +421,14 @@ main(void)
 #endif
     int rc;
 	gpio_dbug_init();
-	
+	//nrfx_nvmc_icache_enable();
     /* Initialize OS */
     sysinit();
-	
+	hal_radio_ccm_tx_test();
+	while(1){
+		hal_watchdog_tickle();
+	}
+	//hal_rtc_ppi_clear();
 	//hal_rtc_test();
 
 	//hal_timer_test();

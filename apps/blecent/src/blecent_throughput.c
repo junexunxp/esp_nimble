@@ -227,7 +227,6 @@ blecent_throughput_test(uint16_t connhandle, uint16_t atthandle)
                               throughputV, sizeof throughputV, blecent_att_write_done, NULL);
 
 }
-#endif
 
 
 static void
@@ -254,6 +253,7 @@ blecent_throughput_client_start(const struct peer *peer)
 
 }
 
+#endif
 
 
 /**
@@ -280,13 +280,13 @@ blecent_on_disc_complete(const struct peer *peer, int status, void *arg)
 	//Modify @June
 	//Set to 2M phy
 	//printf("phy update status %d\n",ble_gap_set_prefered_le_phy(peer->conn_handle, 2, 2, 0));
-	//ble_gap_set_prefered_le_phy(peer->conn_handle, 2, 2, 0);
+	//ble_gap_set_prefered_le_phy(peer->conn_handle, 4, 4, 0);
 
     /* Now perform three concurrent GATT procedures against the peer: read,
      * write, and subscribe to notifications.
      */
    // blecent_read_write_subscribe(peer);
-	blecent_throughput_client_start(peer);
+	//blecent_throughput_client_start(peer);
 }
 
 /**
@@ -569,13 +569,14 @@ blecent_gap_event(struct ble_gap_event *event, void *arg)
         if (event->connect.status == 0) {
             /* Connection successfully established. */
             MODLOG_DFLT(INFO, "Connection established ");
-			ble_gap_set_prefered_le_phy(event->connect.conn_handle, 7, 7, 0);
+			
 
             rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
             assert(rc == 0);
             print_conn_desc(&desc);
             MODLOG_DFLT(INFO, "\n");
 			ble_hs_hci_util_set_data_len(event->connect.conn_handle,251,17040);
+			ble_gap_set_prefered_le_phy(event->connect.conn_handle, 4, 4, 1);
             /* Remember peer. */
             rc = peer_add(event->connect.conn_handle);
             if (rc != 0) {
