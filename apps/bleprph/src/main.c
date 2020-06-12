@@ -424,7 +424,7 @@ main(void)
 	//nrfx_nvmc_icache_enable();
     /* Initialize OS */
     sysinit();
-	hal_radio_ccm_tx_test();
+	hal_radio_tx_inten_test();
 	while(1){
 		hal_watchdog_tickle();
 	}

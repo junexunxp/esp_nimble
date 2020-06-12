@@ -23,6 +23,7 @@ void hal_radio_ccm_rx_test(void );
 
 void hal_radio_rxbuffer_congestion_test(void );
 void hal_ccm_endecrypt_test(void );
+void hal_radio_tx_inten_test(void );
 
 
 

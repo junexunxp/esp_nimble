@@ -240,8 +240,8 @@ static void hal_radio_1m_setup(void ){
     NRF_RADIO->PREFIX0 = (NRF_RADIO->PREFIX0 & 0xFFFFFF00) | (0x17);
 	ble_phy_apply_errata_102_106_107();
 
-	NRF_RADIO->FREQUENCY = 4;//37
-	NRF_RADIO->DATAWHITEIV = 0;
+	NRF_RADIO->FREQUENCY = 2;//37
+	NRF_RADIO->DATAWHITEIV = 37;
 	
 	NRF_RADIO->MODE = RADIO_MODE_MODE_Ble_1Mbit;
 
@@ -299,6 +299,9 @@ static void hal_ccm_decrypt_test(void ){
 
 
 }
+
+
+
 
 void hal_ccm_endecrypt_test(void ){
 	hal_ccm_tx_setup();
@@ -902,6 +905,117 @@ while(1){
 }
 
 
+}
+
+
+static uint8_t tx_ready,ready,addr,bcmatch,ep,ee,ed,pe;
+
+
+
+static void hal_radio_isr(void ){
+	
+	if(NRF_RADIO->EVENTS_READY){
+		
+		ready = 1;
+		NRF_RADIO->EVENTS_READY = 0;
+
+	}
+	else if(NRF_RADIO->EVENTS_TXREADY){
+		tx_ready = 1;
+		NRF_RADIO->EVENTS_TXREADY = 0;
+
+	}
+	else if(NRF_RADIO->EVENTS_ADDRESS){
+		addr = 1;
+		NRF_RADIO->EVENTS_ADDRESS = 0;
+
+	}
+	else if(NRF_RADIO->EVENTS_BCMATCH){
+		bcmatch = 1;
+		NRF_RADIO->EVENTS_BCMATCH = 0;
+
+	}
+
+	else if(NRF_RADIO->EVENTS_PAYLOAD){
+		ep = 1;
+		NRF_RADIO->EVENTS_PAYLOAD = 0;
+	
+	}
+	else if(NRF_RADIO->EVENTS_END){
+		ee = 1;
+		NRF_RADIO->EVENTS_END = 0;
+	
+	}
+	else if(NRF_RADIO->EVENTS_DISABLED){
+		ed = 1;
+		NRF_RADIO->EVENTS_DISABLED = 0;
+
+	}else if(NRF_RADIO->EVENTS_PHYEND){
+		pe = 1;
+		NRF_RADIO->EVENTS_PHYEND = 0;
+
+	}
+	
+
+
+}
+void hal_radio_tx_inten_test(void ){
+	 uint8_t loop = 5;
+	 while(--loop){
+
+		hal_radio_reset();
+		timer_delay_us(100);
+		tx_ready=0;
+		ready=0;
+		addr=0;
+		bcmatch=0;
+		ep=0;
+		ee=0;
+		ed=0;
+		pe=0;
+		//loop = 4;
+		if(loop==4){
+			hal_radio_1m_setup();
+		}else if(loop==3){
+			hal_radio_2m_setup();
+
+		}else if(loop==2){
+			hal_radio_125k_setup();
+		
+		}
+		else if(loop==1){
+			hal_radio_500k_setup();
+		}
+		
+		NVIC_SetPriority(RADIO_IRQn, 0);
+	    NVIC_SetVector(RADIO_IRQn, (uint32_t)hal_radio_isr);
+		
+		uint8_t *tx_buffer = (uint8_t *)test_tx_buffer;
+		
+		tx_buffer[0] = 0x11;
+		tx_buffer[1] = TEST_TX_LEN;
+		tx_buffer[2] = 0;
+
+		for(uint16_t i = 0;i<TEST_TX_LEN;i++){
+			tx_buffer[i+3] = i + 1;
+		}
+		//3
+		NRF_RADIO->INTENSET = 0x0820041f;
+		//NRF_RADIO->SHORTS = 0X100020;
+		//4
+		NRF_RADIO->BCC = 8;
+		//5
+		NRF_RADIO->TASKS_TXEN = 1;
+		while(!ready);
+		//7
+		NRF_RADIO->TASKS_START = 1;
+		while(!addr);
+		NRF_RADIO->TASKS_BCSTART = 1;
+		while(!ee);
+		NRF_RADIO->TASKS_DISABLE = 1;
+		while(!ed);
+		printf("isr events: %d %d %d %d %d %d %d %d\n",tx_ready,ready,addr,bcmatch,ep,ee,ed,pe);
+	 }
 }
 
 
