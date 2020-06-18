@@ -25,6 +25,40 @@ void hal_radio_rxbuffer_congestion_test(void );
 void hal_ccm_endecrypt_test(void );
 void hal_radio_tx_inten_test(void );
 
+void hal_radio_rxaddress_test(void );
+void hal_radio_txaddress_test(void );
+void hal_radio_length_test_tx(void );
+void hal_radio_length_test_rx(void );
 
+
+void hal_radio_txaddress_balen_test(void );
+void hal_radio_rxaddress_balen_test(void );
+void hal_radio_tx_tasks_stop_test(void );
+
+
+void hal_radio_rxpdustat_test(void );
+void hal_radio_crccnf_test_rx(void );
+void hal_radio_crccnf_test_tx(void );
+void hal_radio_tifs_test_rx(void );
+void hal_radio_tifs_test_tx(void );
+void hal_radio_txtimmings_test(void );
+
+
+
+#define WAIT_FOR_EVENT_ARRIVE_AND_CLR(event)	\
+			do{					\
+				volatile uint32_t events_v = event;	\
+				if(events_v){				\
+					event = 0;				\
+					break;					\
+				}							\
+			}while(1)		\
+
+
+#define REPEAT_N_TIMES_START(n)		\
+	for(uint8_t rnt =0; rnt<n; rnt++)	\
+		{			
+#define REPEAT_N_TIMES_END()		\
+		}	\
 
 #endif
