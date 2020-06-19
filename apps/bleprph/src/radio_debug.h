@@ -43,6 +43,13 @@ void hal_radio_tifs_test_rx(void );
 void hal_radio_tifs_test_tx(void );
 void hal_radio_txtimmings_test(void );
 
+void hal_radio_2m_aar_test_rx(void );
+
+void hal_radio_2m_aar_test_tx(void );
+
+void hal_radio_ppi_aar_test_tx(void );
+void hal_radio_ppi_aar_test_rx(void );
+
 
 
 #define WAIT_FOR_EVENT_ARRIVE_AND_CLR(event)	\

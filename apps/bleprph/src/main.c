@@ -420,12 +420,12 @@ main(void)
     static char ver_str[IMGMGR_NMGR_MAX_VER];
 #endif
     int rc;
-	gpio_dbug_init();
+	//gpio_dbug_init();
 	//nrfx_nvmc_icache_enable();
     /* Initialize OS */
     sysinit();
 
-	hal_radio_txtimmings_test();
+	hal_radio_ppi_aar_test_rx();
 	while(1){
 		hal_watchdog_tickle();
 	}

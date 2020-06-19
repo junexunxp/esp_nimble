@@ -397,6 +397,7 @@ uint8_t mic2[PLEN];
 uint8_t mic3[PLEN];
 uint8_t mic4[PLEN];
 
+//To complete RX/TX ccm function, must force packet structure to s0, len, s1 fields, otherwise MIC check will be failed.
 void hal_radio_ccm_rx_test(void ){
 	hal_radio_reset();
 	hal_radio_1m_setup();
@@ -533,7 +534,7 @@ void hal_radio_ccm_rx_test(void ){
 	
 	
 }
-
+
 
 
 void hal_radio_ccm_tx_test(void ){
@@ -577,7 +578,7 @@ void hal_radio_ccm_tx_test(void ){
 	printf("outputs: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",s0,s1,s2,s3,eec0,s4,s5,s6,s7,eec1);
 	
 }
-
+
 
 void hal_radio_rxbuffer_congestion_test(void ){
 
@@ -1542,12 +1543,15 @@ void hal_radio_length_test_rx(void ){
 		}
 		hal_radio_rx_init();
 		NRF_RADIO->SHORTS = 0x03;
-		for(int i=0; i<2;i++){
+		for(int i=0; i<3;i++){
 			NRF_RADIO->PCNF0 &= 0xFFFFFFF0;
 			if(i==0){
 				NRF_RADIO->PCNF0 |= 4;
 			}else if(i==1){
 				NRF_RADIO->PCNF0 |= 6;
+			}else{
+				NRF_RADIO->PCNF1 &= 0xffff00ff;
+				NRF_RADIO->PCNF1 |= 0x1000;
 			}
 			NRF_RADIO->TASKS_RXEN = 1;
 			while(!NRF_RADIO->EVENTS_DISABLED);
@@ -1630,6 +1634,198 @@ void hal_radio_txtimmings_test(void ){
 
 	}
 
+
+}
+
+void hal_radio_2m_aar_test_tx(void ){
+	hal_radio_reset();
+	hal_radio_2m_setup();
+	uint8_t *tx_buffer = (uint8_t *)test_tx_buffer;
+		
+	tx_buffer[0] = 0x11;
+	tx_buffer[1] = 12;
+	
+	for(uint16_t i = 0;i<12;i++){
+		tx_buffer[i+2] = i + 1;
+	}
+	NRF_RADIO->PACKETPTR = (uint32_t )tx_buffer;
+	NRF_RADIO->SHORTS = 0x21;
+	NRF_RADIO->TASKS_TXEN = 1;
+	
+}
+
+void hal_radio_2m_aar_test_rx(void ){
+	hal_radio_reset();
+	hal_radio_2m_setup();
+	hal_radio_rx_init();
+	NRF_TIMER3->TASKS_START = 1;
+
+	NRF_RADIO->SHORTS = 0x43;
+	
+	NRF_PPI->CH[0].EEP = (uint32_t)&(NRF_RADIO->EVENTS_BCMATCH);
+	NRF_PPI->CH[0].TEP = (uint32_t)&(NRF_TIMER3->TASKS_CAPTURE[0]);
+	
+	NRF_PPI->CH[1].EEP = (uint32_t)&(NRF_AAR->EVENTS_NOTRESOLVED);
+	NRF_PPI->CH[1].TEP = (uint32_t)&(NRF_TIMER3->TASKS_CAPTURE[1]);
+	
+	NRF_PPI->CH[2].EEP = (uint32_t)&(NRF_RADIO->EVENTS_END);
+	NRF_PPI->CH[2].TEP = (uint32_t)&(NRF_TIMER3->TASKS_CAPTURE[2]);
+
+	NRF_PPI->CH[3].EEP = (uint32_t)&(NRF_RADIO->EVENTS_BCMATCH);
+	NRF_PPI->CH[3].TEP = (uint32_t)&(NRF_AAR->TASKS_START);
+
+
+	NRF_PPI->CHENSET = PPI_CHEN_CH0_Msk|PPI_CHEN_CH1_Msk|PPI_CHEN_CH2_Msk|PPI_CHEN_CH3_Msk;
+	NRF_AAR->ENABLE = 3;
+	uint8_t keyptr[16*16];
+	NRF_AAR->IRKPTR = (uint32_t )keyptr;
+	NRF_AAR->ADDRPTR = (uint32_t )test_rx_buffer + 2;
+	NRF_RADIO->BCC = 48;
+	uint8_t scratch_ptr[4];
+	NRF_AAR->SCRATCHPTR = (uint32_t )scratch_ptr;
+	
+	for(uint8_t ii=0;ii<16;ii++){
+		NRF_AAR->NIRK = ii+1;
+		NRF_RADIO->TASKS_RXEN = 1;
+		WAIT_FOR_EVENT_ARRIVE_AND_CLR(NRF_RADIO->EVENTS_END);
+		timer_delay_us(500);
+		uint32_t t1 = NRF_TIMER3->CC[0];
+		uint32_t t2 = NRF_TIMER3->CC[1];
+		uint32_t t3 = NRF_TIMER3->CC[2];
+		printf("cnt %d result: aar trigger time %ld, resovle result time %ld, events end time %ld, resolve time %ld, events end - resovle time %ld\n",ii,t1,t2,t3,t2-t1,t3-t2);
+		timer_delay_ms(500);
+	}
+
+
+
+}
+
+
+void hal_radio_ppi_aar_test_rx(void ){
+	uint8_t loop = 0;
+	NRF_TIMER0->TASKS_START = 1;
+	gpio_dbg_access_addr_ppi_setup_rx();
+	NRF_PPI->CHENSET = PPI_CHEN_CH26_Msk;
+	while(1){
+		
+		hal_radio_reset();
+		switch(loop){
+			case 0:
+				loop = 1;
+				hal_radio_1m_setup();
+				printf("1M mode test start:\n");
+				break;
+			case 1:
+				hal_radio_2m_setup();
+				printf("2M mode test start:\n");
+				loop = 2;
+				break;
+			case 2:
+				hal_radio_125k_setup();
+				printf("125K mode test start:\n");
+				loop = 3;
+				break;
+			case 3:
+				printf("500K mode test start:\n");
+				hal_radio_500k_setup();
+				loop = 0;
+				break;
+			default:
+				return;
+				break;
+		}
+		
+
+		hal_radio_rx_init();
+		NRF_RADIO->SHORTS = 0x03;
+		
+		//NRF_PPI->CH[0].EEP = (uint32_t)&(NRF_RADIO->EVENTS_ADDRESS);
+		//NRF_PPI->CH[0].TEP = (uint32_t)&(NRF_TIMER0->TASKS_CAPTURE[1]);
+		//NRF_PPI->CHENSET = PPI_CHEN_CH0_Msk;
+		
+		NRF_RADIO->TASKS_RXEN = 1;
+		
+		WAIT_FOR_EVENT_ARRIVE_AND_CLR(NRF_RADIO->EVENTS_ADDRESS);
+		
+		
+		while(!NRF_RADIO->EVENTS_DISABLED);
+		uint32_t t0 = NRF_TIMER0->CC[0];
+		uint32_t t1 = NRF_TIMER0->CC[1];
+		uint32_t t2 = NRF_TIMER0->CC[3];
+
+		printf("LT ready time %ld, LT aa time %ld, DUT aa time %ld, DUT aa delay %ld, LT aa delay %ld\n",t0,t2,t1,t1-t0,t2-t0);
+		timer_delay_ms(500);
+		NRF_TIMER0->TASKS_CLEAR = 1;
+
+	}
+
+
+
+}
+
+
+void hal_radio_ppi_aar_test_tx(void ){
+	uint8_t loop = 0;
+	NRF_TIMER0->TASKS_START = 1;
+	gpio_dbg_access_addr_ppi_setup_tx();
+	uint8_t *tx_buffer = (uint8_t *)test_tx_buffer;
+		
+	tx_buffer[0] = 0x11;
+	tx_buffer[1] = TEST_TX_LEN;
+	
+	for(uint16_t i = 0;i<TEST_TX_LEN;i++){
+		tx_buffer[i+2] = i + 1;
+	}
+	
+	while(1){
+		
+		switch(loop){
+			case 0:
+				loop = 1;
+				hal_radio_1m_setup();
+				printf("1M mode test start:\n");
+				break;
+			case 1:
+				hal_radio_2m_setup();
+				printf("2M mode test start:\n");
+				loop = 2;
+				break;
+			case 2:
+				hal_radio_125k_setup();
+				printf("125K mode test start:\n");
+				loop = 3;
+				break;
+			case 3:
+				printf("500K mode test start:\n");
+				hal_radio_500k_setup();
+				loop = 0;
+				break;
+			default:
+				return;
+				break;
+		}
+		
+		
+		
+		NRF_RADIO->PACKETPTR = (uint32_t )tx_buffer;
+
+		NRF_RADIO->SHORTS = 0x03;
+		
+		NRF_RADIO->TASKS_TXEN = 1;
+		
+		while(!NRF_RADIO->EVENTS_END);
+		hal_radio_reset();
+		uint8_t ee = NRF_RADIO->EVENTS_END;
+		uint8_t aa = NRF_RADIO->EVENTS_ADDRESS;
+		uint8_t er = NRF_RADIO->EVENTS_READY;
+		timer_delay_us(5000);
+		printf("send complete %d %d %d\n",ee,aa,er);
+		//gpio_clr(DEBUG_EVENTS_READY_GPIO_INDX);
+		//gpio_clr(DEBUG_ACCESSADDR_GPIO_INDX);
+
+
+	}
+	
 
 }
 

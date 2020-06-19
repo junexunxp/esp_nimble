@@ -50,9 +50,9 @@ Listening on TCP/IP port 3333
 Connecting to target...Connected to target
 Waiting for GDB connection...Connected to 127.0.0.1
 Reading all registers
-Read 4 bytes @ address 0x0000C7FC (Data = 0xD0FA2B00)
-Read 2 bytes @ address 0x0000C7FC (Data = 0x2B00)
-0x0000c7fc in ?? ()
+Read 4 bytes @ address 0x20000596 (Data = 0xDD012800)
+Read 2 bytes @ address 0x20000596 (Data = 0x2800)
+0x20000596 in ?? ()
 Received monitor command: reset
 Resetting target
 Resetting target
@@ -91,13 +91,14 @@ Downloading 4096 bytes @ address 0x0002B000
 Downloading 4096 bytes @ address 0x0002C000
 Downloading 4096 bytes @ address 0x0002D000
 Downloading 4096 bytes @ address 0x0002E000
-Downloading 3892 bytes @ address 0x0002F000
-Restoring binary file ../../bin/targets/peripheral/app/apps/bleprph/bleprph.img into memory (0xc000 to 0x2ff34)
-r0             0x7c	124
-r1             0x200045d0	536888784
-r2             0x0	0
-r3             0x0	0
-r4             0x1	1
+Downloading 4096 bytes @ address 0x0002F000
+Downloading 1344 bytes @ address 0x00030000
+Restoring binary file ../../bin/targets/peripheral/app/apps/bleprph/bleprph.img into memory (0xc000 to 0x30540)
+r0             0x1065d5e	17194334
+r1             0x0	0
+r2             0x2eb07	191239
+r3             0xfa00	64000
+r4             0x40008000	1073774592
 r5             0x0	0
 r6             0x0	0
 r7             0x0	0
@@ -106,10 +107,10 @@ r9             0x0	0
 r10            0x0	0
 r11            0x0	0
 r12            0x0	0
-sp             0x20001620	0x20001620
-lr             0xe567	58727
-pc             0xc7fc	0xc7fc
-xpsr           0x61000000	1627389952Reading register (MSP = 0x20040000)
+sp             0x20002e20	0x20002e20
+lr             0xc797	51095
+pc             0x20000596	0x20000596
+xpsr           0x21000000	553648128Reading register (MSP = 0x20040000)
 
 msp            0x20040000	537133056Reading register (PSP = 0x       0)
 
