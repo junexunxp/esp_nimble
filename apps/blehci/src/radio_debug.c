@@ -1789,7 +1789,7 @@ void hal_radio_ppi_aar_test_tx(void ){
 	for(uint16_t i = 0;i<TEST_TX_LEN;i++){
 		tx_buffer[i+2] = i + 1;
 	}
-	
+	uint8_t run_times = 3;
 	while(1){
 		
 		switch(loop){
@@ -1812,6 +1812,7 @@ void hal_radio_ppi_aar_test_tx(void ){
 				printf("500K mode test start:\n");
 				hal_radio_500k_setup();
 				loop = 0;
+				run_times--;
 				break;
 			default:
 				return;
@@ -1833,13 +1834,23 @@ void hal_radio_ppi_aar_test_tx(void ){
 		uint8_t er = NRF_RADIO->EVENTS_READY;
 		timer_delay_us(5000);
 		printf("send complete %d %d %d\n",ee,aa,er);
+		
 
+
+		if(ee||aa||er){
+
+			
+		}
+		if(!run_times){
 #if TEST_USE_WVT
-		sprintf((char*)log_msg,"loop : %d, send complete %d %d %d",loop,ee,aa,er);
-	    test_hci_support_put_debug_data((uint8_t *)&log_msg, strlen((const char*)log_msg));
-		test_hci_support_set_debug_msg("DBG_01");
-	    TEST_SIGNAL(SIGNAL_ID_DEFAULT, DATA_FMT_STRING);
+			sprintf((char*)log_msg,"loop : %d, send complete %d %d %d",loop,ee,aa,er);
+			SET_DBG_DATA((uint8_t *)&log_msg, strlen((const char*)log_msg));
+			SET_DBG_MSG("hal radio ppi aar test...\n");
+			TEST_SIGNAL(SIGNAL_ID_DEFAULT, DATA_FMT_STRING);
 #endif
+
+			break;
+		}
 		//gpio_clr(DEBUG_EVENTS_READY_GPIO_INDX);
 		//gpio_clr(DEBUG_ACCESSADDR_GPIO_INDX);
 
@@ -2484,8 +2495,8 @@ void hal_radio_tasks_rx_ready(void ){
 TEST_CASE(hal_radio_tc_01)
 {
 	sprintf((char*)log_msg,"\n %s started\n",__func__);
-	test_hci_support_put_debug_data((uint8_t *)&log_msg, strlen((const char*)log_msg));
-	test_hci_support_set_debug_msg("DBG_01");
+	SET_DBG_DATA((uint8_t *)&log_msg, strlen((const char*)log_msg));
+	SET_DBG_MSG("hal radio tc 01...\n");
 	TEST_SIGNAL(SIGNAL_ID_DEFAULT, DATA_FMT_STRING);
 	hal_radio_ppi_aar_test_tx();
 }
@@ -2504,8 +2515,8 @@ void hal_radio_tc_init(void)
 {
     //runtest_init();
     TEST_SUITE_REGISTER(hal_radio_tc);
-    tu_set_pass_cb(test_hci_support_pass_hci, NULL);
-    tu_set_fail_cb(test_hci_support_fail_hci, NULL);
+    tu_set_pass_cb(wvt_port_pass_hci, NULL);
+    tu_set_fail_cb(wvt_port_fail_hci, NULL);
 
 }
 

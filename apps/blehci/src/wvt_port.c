@@ -33,7 +33,7 @@
 #include "controller/ble_ll_test.h"
 #include "runtest/runtest.h"
 
-#include "test_hci_support.h"
+#include "wvt_port.h"
 
 
 
@@ -48,13 +48,36 @@
 #define HCI_ERR_EUNKNOWN 0xF2
 
 
+#define DEBUG_DATA_LEN_MAX		128
+#define DEBUG_MSG_LEN_MAX		128
+
+#define TEST_CMD_BUF_LEN_MAX	128
+
+static uint8_t wait_for_cmd;
+
+
+//Test signal buffers
+static uint8_t debug_index = 0;
+static uint8_t debug_data_buf[DEBUG_DATA_LEN_MAX];
+static uint8_t debug_msg[DEBUG_MSG_LEN_MAX];
+static uint8_t debug_msg_len = 0;
+
+
+static uint8_t test_cmd_buf[TEST_CMD_BUF_LEN_MAX];
+static uint8_t test_len;
+
+
+static uint32_t mem_addr;
+static uint8_t mem_access;
+static uint8_t mem_size;
+
 /*
  * package "run test" request from newtmgr and enqueue on default queue
  * of the application which is actually running the tests (e.g., mynewtsanity).
  * Application callback was initialized by call to run_evb_set() above.
  */
 
-void test_hci_support_pass_hci(const char *msg, void *arg)
+void wvt_port_pass_hci(const char *msg, void *arg)
 {
     uint8_t *evbuf;
 
@@ -62,6 +85,12 @@ void test_hci_support_pass_hci(const char *msg, void *arg)
     if (!evbuf) {
         return;
     }
+
+	if(strlen(msg) + 4 > MYNEWT_VAL(BLE_HCI_EVT_BUF_SIZE)){
+		printf("hci evt buffer overflow in function %s\n",__func__);
+		while(1);
+
+	}
 
     evbuf[0] = BLE_HCI_EVCODE_VENDOR_DEBUG;
     evbuf[1] = 2;
@@ -72,13 +101,19 @@ void test_hci_support_pass_hci(const char *msg, void *arg)
     ble_ll_hci_event_send((struct ble_hci_ev *)evbuf);
 }
 
-void test_hci_support_fail_hci(const char *msg, void *arg)
+void wvt_port_fail_hci(const char *msg, void *arg)
 {
     uint8_t *evbuf;
     evbuf = ble_hci_trans_buf_alloc(BLE_HCI_TRANS_BUF_EVT_HI);
     if (!evbuf) {
         return;
     }
+
+	if(strlen(msg) + 6 > MYNEWT_VAL(BLE_HCI_EVT_BUF_SIZE)){
+		printf("hci evt buffer overflow in function %s\n",__func__);
+		while(1);
+
+	}
 
     evbuf[0] = BLE_HCI_EVCODE_VENDOR_DEBUG;
     evbuf[1] = 2;
@@ -106,7 +141,7 @@ void test_hci_support_fail_hci(const char *msg, void *arg)
 
 
 //Function to trigger test suit or test case using mynewt testutil
-int test_hci_support_run_test_util(uint8_t *buf, uint16_t len)
+static int wvt_port_run_test_util(uint8_t *buf, uint16_t len)
 {
     char testname[MYNEWT_VAL(RUNTEST_MAX_TEST_NAME_LEN)] = "";
     char token[MYNEWT_VAL(RUNTEST_MAX_TOKEN_LEN)] = "";
@@ -145,12 +180,7 @@ int test_hci_support_run_test_util(uint8_t *buf, uint16_t len)
 }
 
 
-
-uint32_t mem_addr;
-uint8_t mem_access;
-uint8_t mem_size;
-
-static void test_hci_support_read_mem(void)
+static void wvt_port_read_mem(void)
 {
     uint8_t *evbuf;
 
@@ -169,82 +199,93 @@ static void test_hci_support_read_mem(void)
    
 }
 
-static uint8_t test_cmd_buf[255];
-static uint8_t test_len;
-void test_hci_support_start_test_cmd(void)
+
+void wvt_port_start_test_cmd(void)
 {
-    test_hci_support_run_test_util(test_cmd_buf, test_len);
+    wvt_port_run_test_util(test_cmd_buf, test_len);
     memset(test_cmd_buf, 0 , test_len);
     test_len = 0;
 }
 
+
+
+
 //Function to handle vendor specific commands
-int test_hci_support_vs_cmd_proc(const uint8_t *cmdbuf, uint8_t inlen, uint16_t ocf,
+int wvt_port_vs_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
 							                       uint8_t *rspbuf, uint8_t *rsplen,
 							                       ble_ll_hci_post_cmd_complete_cb *cb)
 {
     int rc;
-    uint8_t len;
 
     /* Assume error; if all pass rc gets set to 0 */
     rc = BLE_ERR_INV_HCI_CMD_PARMS;
 
-    /* Get length from command */
-    len = cmdbuf[sizeof(uint16_t)];
-    /* Move past HCI command header */
-    cmdbuf += 5;
     switch (ocf) {
     case BLE_HCI_OCF_DBG_RD_MEM:
         if (len == 6) {
-	    mem_addr = get_le32(cmdbuf);
-	    mem_access = *(cmdbuf + 4);
-	    mem_size = *(cmdbuf + 5);
-	    *cb = test_hci_support_read_mem;
-	    rc = 0;
+		    mem_addr = get_le32(cmdbuf);
+			if(mem_addr){
+			    mem_access = *(cmdbuf + 4);
+			    mem_size = *(cmdbuf + 5);
+			    *cb = wvt_port_read_mem;
+			    rc = 0;
+			}else{
+				rc = -1;
+			}
+		
         }
 	rc += BLE_ERR_MAX + 1;
         break;
     case BLE_HCI_OCF_DBG_WR_MEM:
         if (len > 6) {
 	    mem_addr = get_le32(cmdbuf);
-	    mem_access = *(cmdbuf + 4);
-	    mem_size = *(cmdbuf + 5);
-	    memcpy((uint8_t *)mem_addr, cmdbuf + 6, mem_size); 
-	    rc = 0;
+		if(mem_addr){
+		    mem_access = *(cmdbuf + 4);
+		    mem_size = *(cmdbuf + 5);
+		    memcpy((uint8_t *)mem_addr, cmdbuf + 6, mem_size); 
+		    rc = 0;
+		}else{
+			rc = -1;
+		}
         }
 	break;
     case BLE_HCI_OCF_VS_RUN_BB_TEST:
         if (len != 0) {
-	    memcpy(test_cmd_buf, cmdbuf, len);
-	    test_len = len;
-	    *cb = test_hci_support_start_test_cmd;
-        rc = 0;
+			if(len <TEST_CMD_BUF_LEN_MAX){
+	   			memcpy(test_cmd_buf, cmdbuf, len);
+			    test_len = len;
+			    *cb = wvt_port_start_test_cmd;
+		        rc = 0;
+			}else{
+				printf("test cmd buf overflow in function %s\n",__func__);
+				rc = -1;
+			}
 
         }
-	rc += BLE_ERR_MAX + 1;
+		rc += BLE_ERR_MAX + 1;
         break;
     }
     return rc;
 }
 
-static uint8_t wait_for_cmd;
 
-
-//Test signal buffers
-uint8_t debug_index = 0;
-uint8_t debug_data_buf[240];
-uint8_t debug_msg[100];
-uint8_t debug_msg_len = 0;
-void test_hci_support_send_signal(uint8_t signal_id, uint8_t data_fmt)
+void wvt_port_send_signal(uint8_t signal_id, uint8_t data_fmt)
 {
 
 	//const char *str1 = "Write Radio"; 
 	//TODO: buffer may overflow
 	uint8_t *evbuf = ble_hci_trans_buf_alloc(BLE_HCI_TRANS_BUF_EVT_HI);
 	if (!evbuf) {
-	   return;
+		printf("memory runout %s\n",__func__);
+	   	return;
 	}
 
+	if(debug_msg_len + debug_index + 16 > MYNEWT_VAL(BLE_HCI_EVT_BUF_SIZE)){
+		printf("hci evt buffer overflow in function %s\n",__func__);
+		while(1);
+
+	}
+	
 	evbuf[0] = BLE_HCI_EVCODE_VENDOR_DEBUG;
 	evbuf[1] = 2;
 	/* subopcode */
@@ -276,7 +317,7 @@ void test_hci_support_send_signal(uint8_t signal_id, uint8_t data_fmt)
     debug_index = 0;
 }
 
-void test_hci_support_wait_signal(uint8_t wait_id)
+void wvt_port_wait_signal(uint8_t wait_id)
 {
     wait_for_cmd = 1;
 	while (wait_for_cmd);
@@ -288,16 +329,26 @@ void test_hci_clear_wait_signal(void ){
 	wait_for_cmd = 0;
 }
 
-void test_hci_support_put_debug_data(uint8_t *data, uint8_t len)
+void wvt_port_put_debug_data(uint8_t *data, uint8_t len)
 {
-    memcpy((uint8_t *)(debug_data_buf+debug_index), data, len);
-    debug_index += len;
+	if(debug_index + len <DEBUG_DATA_LEN_MAX){
+    	memcpy((uint8_t *)(debug_data_buf+debug_index), data, len);
+    	debug_index += len;
+	}else{
+		printf("buffer overflow %s\n",__func__);
+		while(1);
+	}
 }
 
-void test_hci_support_set_debug_msg(const char *msg)
+void wvt_port_set_debug_msg(const char *msg)
 {
-    memcpy((uint8_t *)debug_msg, msg, strlen(msg));
-    debug_msg_len = strlen(msg);
+	if(strlen(msg)<DEBUG_MSG_LEN_MAX){
+		memcpy((uint8_t *)debug_msg, msg, strlen(msg));
+   		debug_msg_len = strlen(msg);
+	}else{
+		printf("buffer overflow %s\n",__func__);
+		while(1);
+	}
 }
 
 

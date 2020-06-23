@@ -1588,10 +1588,10 @@ ble_ll_hci_cmd_proc(struct ble_npl_event *ev)
 	//Support wvt framework
 	case BLE_HCI_OGF_VENDOR:
 		{
-		extern int test_hci_support_vs_cmd_proc(const uint8_t *cmdbuf, uint8_t inlen, uint16_t ocf,
+		extern int wvt_port_vs_cmd_proc(const uint8_t *cmdbuf, uint8_t inlen, uint16_t ocf,
 							                       uint8_t *rspbuf, uint8_t *rsplen,
 							                       ble_ll_hci_post_cmd_complete_cb *cb);
-		rc = test_hci_support_vs_cmd_proc(cmd->data, cmd->length, (uint16_t)ocf, rspbuf, &rsplen, &post_cb);
+		rc = wvt_port_vs_cmd_proc(cmd->data, cmd->length, (uint16_t)ocf, rspbuf, &rsplen, &post_cb);
 		}
 		break;
 

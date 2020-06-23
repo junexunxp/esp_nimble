@@ -72,10 +72,11 @@ void hal_radio_ppi_aar_test_rx(void );
 #if TEST_USE_WVT
 #include "testutil/testutil.h"
 #include "runtest/runtest.h"
-#include "test_hci_support.h"
+#include "wvt_port.h"
 
-TEST_SUITE_DECL(hal_radio_tc);
-//TEST_CASE_DECL(bb_test_case_03);
+//TEST_SUITE_DECL(hal_radio_tc);
+//TEST_CASE_DECL(hal_radio_tc_01);
+
 void hal_radio_tc_init(void );
 #endif
 
