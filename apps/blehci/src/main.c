@@ -19,12 +19,13 @@
 
 #include <assert.h>
 #include "os/mynewt.h"
-
+#include "radio_debug.h"
 int
 main(void)
 {
     /* Initialize OS */
     sysinit();
+	hal_radio_tc_init();
 
     while (1) {
         os_eventq_run(os_eventq_dflt_get());

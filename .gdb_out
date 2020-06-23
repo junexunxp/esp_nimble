@@ -43,16 +43,16 @@ Connecting to J-Link...
 J-Link is connected.
 Firmware: J-Link OB-SAM3U128-V2-NordicSemi compiled Jan  7 2019 14:07:15
 Hardware: V1.00
-S/N: 683014272
+S/N: 683631628
 Checking target voltage...
 Target voltage: 3.30 V
 Listening on TCP/IP port 3333
 Connecting to target...Connected to target
 Waiting for GDB connection...Connected to 127.0.0.1
 Reading all registers
-Read 4 bytes @ address 0x20000596 (Data = 0xDD012800)
-Read 2 bytes @ address 0x20000596 (Data = 0x2800)
-0x20000596 in ?? ()
+Read 4 bytes @ address 0x000102BA (Data = 0xBD38B905)
+Read 2 bytes @ address 0x000102BA (Data = 0xB905)
+0x000102ba in ?? ()
 Received monitor command: reset
 Resetting target
 Resetting target
@@ -79,37 +79,24 @@ Downloading 4096 bytes @ address 0x0001F000
 Downloading 4096 bytes @ address 0x00020000
 Downloading 4096 bytes @ address 0x00021000
 Downloading 4096 bytes @ address 0x00022000
-Downloading 4096 bytes @ address 0x00023000
-Downloading 4096 bytes @ address 0x00024000
-Downloading 4096 bytes @ address 0x00025000
-Downloading 4096 bytes @ address 0x00026000
-Downloading 4096 bytes @ address 0x00027000
-Downloading 4096 bytes @ address 0x00028000
-Downloading 4096 bytes @ address 0x00029000
-Downloading 4096 bytes @ address 0x0002A000
-Downloading 4096 bytes @ address 0x0002B000
-Downloading 4096 bytes @ address 0x0002C000
-Downloading 4096 bytes @ address 0x0002D000
-Downloading 4096 bytes @ address 0x0002E000
-Downloading 4096 bytes @ address 0x0002F000
-Downloading 1344 bytes @ address 0x00030000
-Restoring binary file ../../bin/targets/peripheral/app/apps/bleprph/bleprph.img into memory (0xc000 to 0x30540)
-r0             0x1065d5e	17194334
-r1             0x0	0
-r2             0x2eb07	191239
-r3             0xfa00	64000
-r4             0x40008000	1073774592
-r5             0x0	0
-r6             0x0	0
-r7             0x0	0
+Downloading 3608 bytes @ address 0x00023000
+Restoring binary file ../../bin/targets/hci/app/apps/blehci/blehci.img into memory (0xc000 to 0x23e18)
+r0             0x1	1
+r1             0xffffffff	4294967295
+r2             0x8dd400	9294848
+r3             0x77fff	491519
+r4             0x8dd400	9294848
+r5             0x780	1920
+r6             0x7a8654	8029780
+r7             0x7a8654	8029780
 r8             0x0	0
-r9             0x0	0
+r9             0x40	64
 r10            0x0	0
 r11            0x0	0
 r12            0x0	0
-sp             0x20002e20	0x20002e20
-lr             0xc797	51095
-pc             0x20000596	0x20000596
+sp             0x20000468	0x20000468
+lr             0x1025b	66139
+pc             0x102ba	0x102ba
 xpsr           0x21000000	553648128Reading register (MSP = 0x20040000)
 
 msp            0x20040000	537133056Reading register (PSP = 0x       0)

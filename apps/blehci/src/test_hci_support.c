@@ -33,6 +33,8 @@
 #include "controller/ble_ll_test.h"
 #include "runtest/runtest.h"
 
+#include "test_hci_support.h"
+
 
 
 /* Venfor specific commands*/
@@ -167,6 +169,8 @@ static void test_hci_support_read_mem(void)
    
 }
 
+static uint8_t test_cmd_buf[255];
+static uint8_t test_len;
 void test_hci_support_start_test_cmd(void)
 {
     test_hci_support_run_test_util(test_cmd_buf, test_len);
@@ -175,7 +179,9 @@ void test_hci_support_start_test_cmd(void)
 }
 
 //Function to handle vendor specific commands
-int test_hci_support_vs_cmd_proc(uint8_t *cmdbuf, uint16_t ocf, uint8_t *rsplen, ble_ll_hci_post_cmd_complete_cb *cb)
+int test_hci_support_vs_cmd_proc(const uint8_t *cmdbuf, uint8_t inlen, uint16_t ocf,
+							                       uint8_t *rspbuf, uint8_t *rsplen,
+							                       ble_ll_hci_post_cmd_complete_cb *cb)
 {
     int rc;
     uint8_t len;
@@ -186,7 +192,7 @@ int test_hci_support_vs_cmd_proc(uint8_t *cmdbuf, uint16_t ocf, uint8_t *rsplen,
     /* Get length from command */
     len = cmdbuf[sizeof(uint16_t)];
     /* Move past HCI command header */
-    cmdbuf += BLE_HCI_CMD_HDR_LEN;
+    cmdbuf += 5;
     switch (ocf) {
     case BLE_HCI_OCF_DBG_RD_MEM:
         if (len == 6) {
@@ -263,7 +269,7 @@ void test_hci_support_send_signal(uint8_t signal_id, uint8_t data_fmt)
 	   memcpy(&evbuf[5+debug_msg_len+2], debug_data_buf, debug_index);
 	}
 	evbuf[1] += debug_index;
-	ble_ll_hci_event_send(evbuf);
+	ble_ll_hci_event_send((struct ble_hci_ev *)evbuf);
 
     //make buffer ready for next debug signal
     memset(debug_data_buf, 0, sizeof(debug_data_buf));

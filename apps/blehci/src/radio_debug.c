@@ -2504,8 +2504,8 @@ void hal_radio_tc_init(void)
 {
     //runtest_init();
     TEST_SUITE_REGISTER(hal_radio_tc);
-    tu_set_pass_cb(runtest_pass_hci, NULL);
-    tu_set_fail_cb(runtest_fail_hci, NULL);
+    tu_set_pass_cb(test_hci_support_pass_hci, NULL);
+    tu_set_fail_cb(test_hci_support_fail_hci, NULL);
 
 }
 

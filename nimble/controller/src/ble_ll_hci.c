@@ -1584,6 +1584,18 @@ ble_ll_hci_cmd_proc(struct ble_npl_event *ev)
     case BLE_HCI_OGF_LE:
         rc = ble_ll_hci_le_cmd_proc(cmd->data, cmd->length, ocf, rspbuf, &rsplen, &post_cb);
         break;
+
+	//Support wvt framework
+	case BLE_HCI_OGF_VENDOR:
+		{
+		extern int test_hci_support_vs_cmd_proc(const uint8_t *cmdbuf, uint8_t inlen, uint16_t ocf,
+							                       uint8_t *rspbuf, uint8_t *rsplen,
+							                       ble_ll_hci_post_cmd_complete_cb *cb);
+		rc = test_hci_support_vs_cmd_proc(cmd->data, cmd->length, (uint16_t)ocf, rspbuf, &rsplen, &post_cb);
+		}
+		break;
+
+	//end
     default:
         /* XXX: Need to support other OGF. For now, return unsupported */
         rc = BLE_ERR_UNKNOWN_HCI_CMD;
@@ -1681,6 +1693,11 @@ ble_ll_hci_cmd_rx(uint8_t *cmdbuf, void *arg)
     /* Fill out the event and post to Link Layer */
     ble_npl_event_set_arg(ev, cmdbuf);
     ble_npl_eventq_put(&g_ble_ll_data.ll_evq, ev);
+	
+	//For wvt framwork support
+	extern void test_hci_clear_wait_signal(void );
+	test_hci_clear_wait_signal();
+	//end
 
     return 0;
 }
