@@ -5,6 +5,12 @@
 #include "testutil/testutil.h"
 #include "runtest/runtest.h"
 
+#define SIGNAL_ID_DEFAULT   0xff
+#define DATA_FMT_STRING		0xff
+#define DATA_FMT_WORD		4
+#define DATA_FMT_HALF_WORD	2
+#define DATA_FMT_BYTE		1
+
 #define TEST_SIGNAL(signal_id, data_fmt) test_hci_support_send_signal(signal_id, data_fmt)
 #define TEST_WAIT(signal_id) test_hci_support_wait_signal(signal_id)
 

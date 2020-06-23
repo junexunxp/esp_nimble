@@ -16,7 +16,6 @@
 #include "controller/ble_ll_whitelist.h"
 #include "controller/ble_ll_resolv.h"
 #include "controller/ble_ll_sync.h"
-#include "ble_ll_conn_priv.h"
 #if MYNEWT_VAL(BLE_LL_DBG_HCI_CMD_PIN) >= 0 || MYNEWT_VAL(BLE_LL_DBG_HCI_EV_PIN) >= 0
 #include "hal/hal_gpio.h"
 #endif
@@ -68,7 +67,7 @@ void test_hci_support_pass_hci(const char *msg, void *arg)
     evbuf[2] = 0xF0;
     /* signal id */
     evbuf[3] = 0x00;
-    ble_ll_hci_event_send(evbuf);
+    ble_ll_hci_event_send((struct ble_hci_ev *)evbuf);
 }
 
 void test_hci_support_fail_hci(const char *msg, void *arg)
@@ -99,7 +98,7 @@ void test_hci_support_fail_hci(const char *msg, void *arg)
         evbuf[1] += 250;
         evbuf[4] = 250;
     }
-    ble_ll_hci_event_send(evbuf);
+    ble_ll_hci_event_send((struct ble_hci_ev *)evbuf);
 }
 
 
@@ -164,7 +163,7 @@ static void test_hci_support_read_mem(void)
     evbuf[2] = 0xF5;
     put_le32(evbuf+3, mem_addr);
     memcpy(evbuf+7, (uint8_t *)mem_addr, mem_size);
-    ble_ll_hci_event_send(evbuf);
+    ble_ll_hci_event_send((struct ble_hci_ev *)evbuf);
    
 }
 
@@ -222,7 +221,7 @@ int test_hci_support_vs_cmd_proc(uint8_t *cmdbuf, uint16_t ocf, uint8_t *rsplen,
     return rc;
 }
 
-
+static uint8_t wait_for_cmd;
 
 
 //Test signal buffers

@@ -66,7 +66,7 @@ struct nrf_ccm_data test_ccm_data={
 
 
 #if TEST_USE_WVT
-#include "test_hci_support.h"
+
 static uint8_t log_msg[512];
 
 #endif

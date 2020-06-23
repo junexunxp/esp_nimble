@@ -72,22 +72,11 @@ void hal_radio_ppi_aar_test_rx(void );
 #if TEST_USE_WVT
 #include "testutil/testutil.h"
 #include "runtest/runtest.h"
+#include "test_hci_support.h"
 
 TEST_SUITE_DECL(hal_radio_tc);
-
-
 //TEST_CASE_DECL(bb_test_case_03);
-void runtest_init(void);
-
 void hal_radio_tc_init(void );
-
-int runtest_nmgr_register_group(void);
-
-
-void runtest_pass_hci(const char *msg, void *arg);
-void runtest_fail_hci(const char *msg, void *arg);
-void runtest_signal_hci(const char *msg, void *arg);
-void runtest_wait_hci(const char *msg, void *arg);
 #endif
 
 #endif
