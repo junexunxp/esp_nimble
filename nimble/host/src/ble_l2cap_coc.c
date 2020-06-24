@@ -403,9 +403,12 @@ ble_l2cap_coc_continue_tx(struct ble_l2cap_chan *chan)
     uint16_t sdu_size_offset;
     int rc;
 
+    ble_hs_lock();
+
     /* If there is no data to send, just return success */
     tx = &chan->coc_tx;
     if (!tx->sdu) {
+        ble_hs_unlock();
         return 0;
     }
 
@@ -458,47 +461,49 @@ ble_l2cap_coc_continue_tx(struct ble_l2cap_chan *chan)
             goto failed;
         }
 
-        ble_hs_lock();
         conn = ble_hs_conn_find_assert(chan->conn_handle);
         rc = ble_l2cap_tx(conn, chan, txom);
-        ble_hs_unlock();
 
         if (rc) {
-          /* txom is consumed by l2cap */
-          txom = NULL;
-          goto failed;
+            /* txom is consumed by l2cap */
+            txom = NULL;
+            goto failed;
         } else {
-            tx->credits --;
+            tx->credits--;
             tx->data_offset += len - sdu_size_offset;
         }
 
         BLE_HS_LOG(DEBUG, "Sent %d bytes, credits=%d, to send %d bytes \n",
-                  len, tx->credits, OS_MBUF_PKTLEN(tx->sdu)- tx->data_offset );
+                  len, tx->credits, OS_MBUF_PKTLEN(tx->sdu)- tx->data_offset);
 
         if (tx->data_offset == OS_MBUF_PKTLEN(tx->sdu)) {
-                BLE_HS_LOG(DEBUG, "Complete package sent\n");
-                os_mbuf_free_chain(tx->sdu);
-                tx->sdu = 0;
-                tx->data_offset = 0;
-                if (tx->flags & BLE_L2CAP_COC_FLAG_STALLED) {
-                    ble_l2cap_event_coc_unstalled(chan, 0);
-                    tx->flags &= ~BLE_L2CAP_COC_FLAG_STALLED;
-                }
-                break;
+            BLE_HS_LOG(DEBUG, "Complete package sent\n");
+            os_mbuf_free_chain(tx->sdu);
+            tx->sdu = NULL;
+            tx->data_offset = 0;
+            if (tx->flags & BLE_L2CAP_COC_FLAG_STALLED) {
+                ble_l2cap_event_coc_unstalled(chan, 0);
+                tx->flags &= ~BLE_L2CAP_COC_FLAG_STALLED;
+            }
+            break;
         }
     }
 
     if (tx->sdu) {
         /* Not complete SDU sent, wait for credits */
         tx->flags |= BLE_L2CAP_COC_FLAG_STALLED;
+        ble_hs_unlock();
         return BLE_HS_ESTALLED;
     }
 
+    ble_hs_unlock();
     return 0;
 
 failed:
     os_mbuf_free_chain(tx->sdu);
     tx->sdu = NULL;
+    ble_hs_unlock();
+
     os_mbuf_free_chain(txom);
     if (tx->flags & BLE_L2CAP_COC_FLAG_STALLED) {
         ble_l2cap_event_coc_unstalled(chan, rc);

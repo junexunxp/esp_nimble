@@ -2023,7 +2023,7 @@ ble_ll_conn_end(struct ble_ll_conn_sm *connsm, uint8_t ble_err)
     /* Remove from the active connection list */
     SLIST_REMOVE(&g_ble_ll_conn_active_list, connsm, ble_ll_conn_sm, act_sle);
 
-#if MYNEWT_VAL(BLE_LL_CFG_FEAT_HOST_TO_CTRL_FLOW_CONTROL)
+#if MYNEWT_VAL(BLE_LL_CFG_FEAT_CTRL_TO_HOST_FLOW_CONTROL)
     ble_ll_conn_cth_flow_free_credit(connsm, connsm->cth_flow_pending);
 #endif
 
@@ -3810,7 +3810,7 @@ ble_ll_conn_rx_isr_end(uint8_t *rxbuf, struct ble_mbuf_hdr *rxhdr)
      * available, we don't need to allocate buffer for this packet so LL will
      * nak it.
      */
-    if (ble_ll_conn_cth_flow_is_enabled() &&
+    if (alloc_rxpdu && ble_ll_conn_cth_flow_is_enabled() &&
         BLE_LL_LLID_IS_DATA(hdr_byte) && (rx_pyld_len > 0)) {
         if (ble_ll_conn_cth_flow_alloc_credit(connsm)) {
             rxhdr->rxinfo.flags |= BLE_MBUF_HDR_F_CONN_CREDIT;
