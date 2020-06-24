@@ -114,7 +114,9 @@ static void ble_apy_apply_errata_164_191(uint8_t new_coded ){
 
 
 }
-static void hal_ccm_tx_setup(void ){
+static void hal_ccm_tx_setup(uint8_t datarate ){
+	//To use CCM and AAR, must include s1 field
+	NRF_RADIO->PCNF0 |= RADIO_PCNF0_S1INCL_Msk;
 
 	NRF_CCM->ENABLE = CCM_ENABLE_ENABLE_Disabled;
 	
@@ -130,13 +132,16 @@ static void hal_ccm_tx_setup(void ){
 	NRF_CCM->OUTPTR = (uint32_t)pktptr;
 	NRF_CCM->SCRATCHPTR = (uint32_t)&test_scratch_buffer[0];
 	NRF_CCM->EVENTS_ERROR = 0;
-	NRF_CCM->MODE = CCM_MODE_LENGTH_Msk | (CCM_MODE_DATARATE_1Mbit << CCM_MODE_DATARATE_Pos);
+	NRF_CCM->MODE = CCM_MODE_LENGTH_Msk | (datarate << CCM_MODE_DATARATE_Pos);
 	//test_ccm_data.dir_bit = 0;
 	NRF_CCM->CNFPTR = (uint32_t)&test_ccm_data;
 	//NRF_CCM->MAXPACKETSIZE = 0xFBul;
 }
 
-static void hal_ccm_rx_setup(void ){
+static void hal_ccm_rx_setup(uint8_t datarate ){
+	//To use CCM and AAR, must include s1 field
+	   NRF_RADIO->PCNF0 |= RADIO_PCNF0_S1INCL_Msk;
+
 	NRF_CCM->ENABLE = CCM_ENABLE_ENABLE_Disabled;
 	NRF_CCM->ENABLE = CCM_ENABLE_ENABLE_Enabled;
 	NRF_CCM->SHORTS = 0;
@@ -149,14 +154,13 @@ static void hal_ccm_rx_setup(void ){
 	NRF_CCM->OUTPTR = (uint32_t)(pktptr + 3);
 	NRF_CCM->SCRATCHPTR = (uint32_t)&test_scratch_buffer[0];
 
-	NRF_CCM->MODE = CCM_MODE_LENGTH_Msk | CCM_MODE_MODE_Decryption|(CCM_MODE_DATARATE_1Mbit << CCM_MODE_DATARATE_Pos);
+	NRF_CCM->MODE = CCM_MODE_LENGTH_Msk | CCM_MODE_MODE_Decryption|(datarate << CCM_MODE_DATARATE_Pos);
 	NRF_CCM->CNFPTR = (uint32_t)&test_ccm_data;
 	//test_ccm_data.dir_bit = 1;
 	//NRF_CCM->MAXPACKETSIZE = 0xFBul;
 	NRF_CCM->TASKS_KSGEN = 1;
    // NRF_PPI->CHENSET = PPI_CHEN_CH25_Msk;
-   //To use CCM and AAR, must include s1 field
-   NRF_RADIO->PCNF0 |= RADIO_PCNF0_S1INCL_Msk;
+   
 }
 
 
@@ -382,7 +386,7 @@ static void hal_ccm_decrypt_test(void ){
 
 
 void hal_ccm_endecrypt_test(void ){
-	hal_ccm_tx_setup();
+	hal_ccm_tx_setup(1);
 	uint8_t *tx_buffer = (uint8_t *)test_enc_buffer;
 	uint16_t i = 0;
 	tx_buffer[0] = 0x11;
@@ -413,7 +417,7 @@ uint8_t mic4[PLEN];
 //To complete RX/TX ccm function, must force packet structure to s0, len, s1 fields, otherwise MIC check will be failed.
 void hal_radio_ccm_rx_test(void ){
 	uint8_t loop = 0;
-
+	uint8_t data_rate;
 	while(1){
 		hal_radio_reset();
 		
@@ -421,28 +425,32 @@ void hal_radio_ccm_rx_test(void ){
 			case 0:
 				loop = 1;
 				hal_radio_1m_setup();
+				data_rate = CCM_MODE_DATARATE_1Mbit;
 				printf("1M mode test start:\n");
 				break;
 			case 1:
 				hal_radio_2m_setup();
+				data_rate = CCM_MODE_DATARATE_2Mbit;
 				printf("2M mode test start:\n");
 				loop = 2;
 				break;
 			case 2:
 				hal_radio_125k_setup();
+				data_rate = CCM_MODE_DATARATE_125Kbps;
 				printf("125K mode test start:\n");
 				loop = 3;
 				break;
 			case 3:
 				printf("500K mode test start:\n");
 				hal_radio_500k_setup();
+				data_rate = CCM_MODE_DATARATE_500Kbps;
 				loop = 4;
 				break;
 			default:
 				return;
 				break;
 		}
-		hal_ccm_rx_setup();
+		hal_ccm_rx_setup(data_rate);
 		uint8_t *rx_buffer = (uint8_t *)test_enc_buffer;
 		uint8_t *ptr = (uint8_t *)test_rx_buffer;
 		ptr+=3;
@@ -513,7 +521,7 @@ void hal_radio_ccm_rx_test(void ){
 
 			
 		}
-		TEST_ASSERT(NRF_CCM->MICSTATUS != 1);
+		TEST_ASSERT(NRF_CCM->MICSTATUS == 1);
 
 
 		printf("mic0: ");
@@ -582,7 +590,7 @@ void hal_radio_ccm_rx_test(void ){
 
 void hal_radio_ccm_tx_test(void ){
 	uint8_t loop = 0;
-
+	uint8_t data_rate;
 	while(1){
 		hal_radio_reset();
 		
@@ -590,28 +598,32 @@ void hal_radio_ccm_tx_test(void ){
 			case 0:
 				loop = 1;
 				hal_radio_1m_setup();
+				data_rate = CCM_MODE_DATARATE_1Mbit;
 				printf("1M mode test start:\n");
 				break;
 			case 1:
 				hal_radio_2m_setup();
+				data_rate = CCM_MODE_DATARATE_2Mbit;
 				printf("2M mode test start:\n");
 				loop = 2;
 				break;
 			case 2:
 				hal_radio_125k_setup();
+				data_rate = CCM_MODE_DATARATE_125Kbps;
 				printf("125K mode test start:\n");
 				loop = 3;
 				break;
 			case 3:
 				printf("500K mode test start:\n");
 				hal_radio_500k_setup();
+				data_rate = CCM_MODE_DATARATE_500Kbps;
 				loop = 4;
 				break;
 			default:
 				return;
 				break;
 		}
-		hal_ccm_tx_setup();
+		hal_ccm_tx_setup(data_rate);
 		uint8_t *tx_buffer = (uint8_t *)test_enc_buffer;
 		uint16_t i = 0;
 		tx_buffer[0] = 0x11;

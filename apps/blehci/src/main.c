@@ -26,7 +26,8 @@ main(void)
     /* Initialize OS */
     sysinit();
 	hal_radio_tc_init();
-	
+	//extern void hal_radio_ccm_tx_test(void );
+	//hal_radio_ccm_tx_test();
     while (1) {
         os_eventq_run(os_eventq_dflt_get());
     }
